@@ -4,6 +4,16 @@
 {% block conteudo %}
 <h3 class="mb-4">Painel administrativo</h3>
 
+{% if eh_dono_usuario %}
+<a href="/dono" class="card p-3 p-md-4 mb-4 text-decoration-none d-flex flex-row align-items-center justify-content-between flex-wrap gap-2 painel-dono-atalho">
+    <span>
+        <strong class="d-block">👑 Painel do Dono</strong>
+        <span class="text-muted small">Números consolidados, gráfico de crescimento e a lista completa de usuários com busca/filtro — só você vê isso.</span>
+    </span>
+    <span class="btn btn-primary btn-sm">Abrir</span>
+</a>
+{% endif %}
+
 <div class="card p-3 p-md-4 mb-4">
     <h5 class="mb-3">Números do site</h5>
     <div class="row row-cols-2 row-cols-md-4 g-3 mb-3">
@@ -162,7 +172,7 @@
     </form>
 </div>
 
-<div class="card p-3 p-md-4 mb-4">
+<div class="card p-3 p-md-4 mb-4" id="pendentes">
     <h5>Aguardando aprovação ({{ pendentes|length }})</h5>
     {% if pendentes %}
     <div class="table-responsive">

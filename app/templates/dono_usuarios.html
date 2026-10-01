@@ -1,0 +1,156 @@
+{% extends "base.html" %}
+{% block titulo %}Usuários — Painel do Dono{% endblock %}
+
+{% block conteudo %}
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+    <div>
+        <h3 class="mb-1">👑 Painel do Dono · Usuários</h3>
+        <p class="text-muted small mb-0">
+            Todos os usuários da plataforma, de qualquer tipo — busca, filtro e acesso rápido ao cadastro de cada um.
+        </p>
+    </div>
+    <a href="/dono" class="btn btn-outline-secondary btn-sm">&larr; Visão geral</a>
+</div>
+
+<div class="row row-cols-2 row-cols-md-4 g-3 mb-4">
+    <div class="col">
+        <div class="card p-3 h-100">
+            <div class="text-muted small">Usuários</div>
+            <div class="fs-3 fw-semibold">{{ total_usuarios }}</div>
+        </div>
+    </div>
+    <div class="col">
+        <div class="card p-3 h-100">
+            <div class="text-muted small">Clientes</div>
+            <div class="fs-3 fw-semibold">{{ total_clientes }}</div>
+        </div>
+    </div>
+    <div class="col">
+        <div class="card p-3 h-100">
+            <div class="text-muted small">Profissionais</div>
+            <div class="fs-3 fw-semibold">{{ total_profissionais }}</div>
+        </div>
+    </div>
+    <div class="col">
+        <div class="card p-3 h-100">
+            <div class="text-muted small">Bloqueados</div>
+            <div class="fs-3 fw-semibold">{{ total_bloqueados }}</div>
+        </div>
+    </div>
+</div>
+
+<form method="get" action="/dono/usuarios" class="card p-3 p-md-4 mb-3">
+    <div class="row g-2 align-items-end">
+        <div class="col-md-3">
+            <label class="form-label small mb-1">Buscar por nome ou e-mail</label>
+            <input type="text" name="busca" value="{{ filtro_busca }}" class="form-control form-control-sm" placeholder="Ex: Maria ou maria@gmail.com">
+        </div>
+        <div class="col-md-2">
+            <label class="form-label small mb-1">Tipo</label>
+            <select name="tipo" class="form-select form-select-sm">
+                <option value="">Todos</option>
+                <option value="cliente" {% if filtro_tipo == "cliente" %}selected{% endif %}>Cliente</option>
+                <option value="profissional" {% if filtro_tipo == "profissional" %}selected{% endif %}>Profissional</option>
+            </select>
+        </div>
+        <div class="col-md-2">
+            <label class="form-label small mb-1">Status</label>
+            <select name="status" class="form-select form-select-sm">
+                <option value="">Todos</option>
+                <option value="ativo" {% if filtro_status == "ativo" %}selected{% endif %}>Ativo</option>
+                <option value="bloqueado" {% if filtro_status == "bloqueado" %}selected{% endif %}>Bloqueado</option>
+                <option value="email_nao_confirmado" {% if filtro_status == "email_nao_confirmado" %}selected{% endif %}>E-mail não confirmado</option>
+            </select>
+        </div>
+        <div class="col-md-2">
+            <label class="form-label small mb-1">Aprovação</label>
+            <select name="aprovacao" class="form-select form-select-sm">
+                <option value="">Todas</option>
+                <option value="pendente" {% if filtro_aprovacao == "pendente" %}selected{% endif %}>Aguardando aprovação</option>
+                <option value="aprovado" {% if filtro_aprovacao == "aprovado" %}selected{% endif %}>Aprovado</option>
+                <option value="pausado" {% if filtro_aprovacao == "pausado" %}selected{% endif %}>Pausado</option>
+            </select>
+            <div class="form-text">Só vale pra profissional.</div>
+        </div>
+        <div class="col-md-2">
+            <label class="form-label small mb-1">Origem</label>
+            <select name="origem" class="form-select form-select-sm">
+                <option value="">Toda origem</option>
+                {% for chave, rotulo in origem_rotulos.items() %}
+                <option value="{{ chave }}" {% if filtro_origem == chave %}selected{% endif %}>{{ rotulo }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-1">
+            <button class="btn btn-primary btn-sm w-100">Filtrar</button>
+        </div>
+    </div>
+</form>
+
+<p class="text-muted small">{{ usuarios|length }} usuário(s) encontrado(s).</p>
+
+<div class="table-responsive">
+<table class="table table-sm align-middle">
+    <thead>
+        <tr>
+            <th>Nome</th>
+            <th>E-mail</th>
+            <th>Tipo</th>
+            <th>Status</th>
+            <th>Aprovação</th>
+            <th>Origem</th>
+            <th>Cadastrado em</th>
+            <th>Último acesso</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for u in usuarios %}
+        <tr>
+            <td>
+                {{ u.nome }}
+                {% if u.email in emails_admin %}
+                    <span class="badge bg-secondary">admin</span>
+                {% endif %}
+            </td>
+            <td class="text-break">{{ u.email }}</td>
+            <td>{{ "Profissional" if u.tipo == "profissional" else "Cliente" }}</td>
+            <td>
+                {% if not u.ativo %}
+                    <span class="badge bg-danger">Bloqueado</span>
+                {% elif not u.email_verificado %}
+                    <span class="badge bg-warning text-dark">E-mail não confirmado</span>
+                {% else %}
+                    <span class="badge bg-success">Ativo</span>
+                {% endif %}
+            </td>
+            <td>
+                {% if u.tipo == "profissional" and u.perfil_profissional %}
+                    {% if not u.perfil_profissional.aprovado %}
+                        <span class="badge bg-warning text-dark">Aguardando</span>
+                    {% elif u.perfil_profissional.ativo %}
+                        <span class="badge bg-success">Aprovado</span>
+                    {% else %}
+                        <span class="badge bg-secondary">Pausado</span>
+                    {% endif %}
+                {% else %}
+                    <span class="text-muted">—</span>
+                {% endif %}
+            </td>
+            <td>{{ origem_rotulos[origem_cadastro(u)] }}</td>
+            <td class="text-nowrap">{{ u.criado_em.strftime("%d/%m/%Y") if u.criado_em else "—" }}</td>
+            <td class="text-nowrap">{{ u.ultimo_login_em.strftime("%d/%m/%Y %H:%M") if u.ultimo_login_em else "Nunca" }}</td>
+            <td class="text-nowrap">
+                <a href="/admin/usuario/{{ u.id }}/editar" class="btn btn-outline-primary btn-sm">Editar</a>
+                {% if u.tipo == "profissional" and u.perfil_profissional %}
+                <a href="/admin/profissional/{{ u.perfil_profissional.id }}/editar" class="btn btn-outline-secondary btn-sm">Perfil</a>
+                {% endif %}
+            </td>
+        </tr>
+    {% else %}
+        <tr><td colspan="9" class="text-center text-muted py-4">Nenhum usuário encontrado com esses filtros.</td></tr>
+    {% endfor %}
+    </tbody>
+</table>
+</div>
+{% endblock %}

@@ -84,6 +84,9 @@
                             {% if eh_admin_usuario %}
                                 <li><a class="dropdown-item" href="/admin">Admin</a></li>
                             {% endif %}
+                            {% if eh_dono_usuario %}
+                                <li><a class="dropdown-item" href="/dono">👑 Painel do Dono</a></li>
+                            {% endif %}
                             <li><hr class="dropdown-divider"></li>
                             <li><a class="dropdown-item" href="/logout">Sair</a></li>
                         </ul>
@@ -129,6 +132,9 @@
                     {% if eh_admin_usuario %}
                         <hr class="menu-lateral-divisor">
                         <a href="/admin" class="menu-lateral-item"><span aria-hidden="true">🛡️</span> Administração</a>
+                    {% endif %}
+                    {% if eh_dono_usuario %}
+                        <a href="/dono" class="menu-lateral-item"><span aria-hidden="true">👑</span> Painel do Dono</a>
                     {% endif %}
                     <hr class="menu-lateral-divisor">
                     <a href="/logout" class="menu-lateral-item menu-lateral-item-sair"><span aria-hidden="true">🚪</span> Sair</a>

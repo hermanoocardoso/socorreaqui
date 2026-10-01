@@ -1,0 +1,156 @@
+{% extends "base.html" %}
+{% block titulo %}Painel do Dono{% endblock %}
+
+{% block conteudo %}
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+    <div>
+        <h3 class="mb-1">👑 Painel do Dono</h3>
+        <p class="text-muted small mb-0">Visão geral de toda a plataforma. Só você vê essa tela.</p>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="/dono/usuarios" class="btn btn-primary btn-sm">Ver todos os usuários</a>
+        <a href="/admin" class="btn btn-outline-secondary btn-sm">Painel admin</a>
+    </div>
+</div>
+
+<div class="row row-cols-2 row-cols-md-4 g-3 mb-4">
+    <div class="col">
+        <div class="card p-3 h-100">
+            <div class="text-muted small">Usuários</div>
+            <div class="fs-3 fw-semibold">{{ numeros.total_usuarios }}</div>
+        </div>
+    </div>
+    <div class="col">
+        <div class="card p-3 h-100">
+            <div class="text-muted small">Clientes</div>
+            <div class="fs-3 fw-semibold">{{ numeros.total_clientes }}</div>
+        </div>
+    </div>
+    <div class="col">
+        <div class="card p-3 h-100">
+            <div class="text-muted small">Profissionais</div>
+            <div class="fs-3 fw-semibold">{{ numeros.total_profissionais }}</div>
+        </div>
+    </div>
+    <div class="col">
+        <div class="card p-3 h-100">
+            <div class="text-muted small">Novos (7 dias)</div>
+            <div class="fs-3 fw-semibold">{{ numeros.novos_7d }}</div>
+        </div>
+    </div>
+    <div class="col">
+        <div class="card p-3 h-100">
+            <div class="text-muted small">Profissionais aprovados</div>
+            <div class="fs-3 fw-semibold">{{ numeros.total_aprovados }}</div>
+        </div>
+    </div>
+    <div class="col">
+        <div class="card p-3 h-100">
+            <div class="text-muted small">Aguardando aprovação</div>
+            <div class="fs-3 fw-semibold">{{ numeros.total_pendentes_aprovacao }}</div>
+        </div>
+    </div>
+    <div class="col">
+        <div class="card p-3 h-100">
+            <div class="text-muted small">Contas bloqueadas</div>
+            <div class="fs-3 fw-semibold">{{ numeros.total_bloqueados }}</div>
+        </div>
+    </div>
+    <div class="col">
+        <div class="card p-3 h-100">
+            <div class="text-muted small">Indicações pendentes</div>
+            <div class="fs-3 fw-semibold">{{ numeros.total_indicacoes_pendentes }}</div>
+        </div>
+    </div>
+</div>
+
+<div class="card p-3 p-md-4 mb-4">
+    <h5 class="mb-3">Crescimento da plataforma</h5>
+    {% if crescimento_mensal|length > 1 %}
+    <p class="text-muted small mb-2">Total de usuários cadastrados, acumulado mês a mês.</p>
+    <canvas id="graficoCrescimento" height="90"></canvas>
+    {% else %}
+    <p class="text-muted small mb-0">Ainda não há histórico suficiente pra montar o gráfico.</p>
+    {% endif %}
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-7">
+        <div class="card p-3 p-md-4 h-100">
+            <h5 class="mb-3">Atividade recente</h5>
+            {% if atividade_recente %}
+            <ul class="list-unstyled mb-0">
+                {% for u in atividade_recente %}
+                <li class="d-flex justify-content-between align-items-center py-2 {% if not loop.last %}border-bottom{% endif %}">
+                    <span>
+                        <a href="/admin/usuario/{{ u.id }}/editar">{{ u.nome }}</a>
+                        se cadastrou como
+                        <span class="badge bg-secondary">{{ "profissional" if u.tipo == "profissional" else "cliente" }}</span>
+                    </span>
+                    <span class="text-muted small text-nowrap ms-2">
+                        {{ u.criado_em.strftime("%d/%m %H:%M") if u.criado_em else "-" }}
+                    </span>
+                </li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <p class="text-muted small mb-0">Nenhum cadastro ainda.</p>
+            {% endif %}
+        </div>
+    </div>
+    <div class="col-lg-5">
+        <div class="card p-3 p-md-4 h-100">
+            <h5 class="mb-3">Atenção</h5>
+            <ul class="list-unstyled mb-0">
+                {% if numeros.total_pendentes_aprovacao > 0 %}
+                <li class="mb-2">
+                    <a href="/admin#pendentes">⏳ {{ numeros.total_pendentes_aprovacao }} profissional(is) aguardando aprovação</a>
+                </li>
+                {% endif %}
+                {% if numeros.total_indicacoes_pendentes > 0 %}
+                <li class="mb-2">
+                    <a href="/admin">🤝 {{ numeros.total_indicacoes_pendentes }} indicação(ões) pendente(s) de contato</a>
+                </li>
+                {% endif %}
+                {% if numeros.total_bloqueados > 0 %}
+                <li class="mb-2">
+                    <a href="/dono/usuarios?status=bloqueado">🚫 {{ numeros.total_bloqueados }} conta(s) bloqueada(s)</a>
+                </li>
+                {% endif %}
+                {% if numeros.total_pendentes_aprovacao == 0 and numeros.total_indicacoes_pendentes == 0 and numeros.total_bloqueados == 0 %}
+                <li class="text-muted small">Tudo em dia por aqui.</li>
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+</div>
+
+{% if crescimento_mensal|length > 1 %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<script>
+(function () {
+    var dados = {{ crescimento_mensal | tojson }};
+    var ctx = document.getElementById("graficoCrescimento");
+    new Chart(ctx, {
+        type: "line",
+        data: {
+            labels: dados.map(function (d) { return d[0]; }),
+            datasets: [{
+                label: "Usuários (acumulado)",
+                data: dados.map(function (d) { return d[1]; }),
+                borderColor: "#4f46e5",
+                backgroundColor: "rgba(79, 70, 229, 0.12)",
+                fill: true,
+                tension: 0.25,
+                pointRadius: 3,
+            }],
+        },
+        options: {
+            plugins: { legend: { display: false } },
+            scales: { y: { beginAtZero: true, ticks: { precision: 0 } } },
+        },
+    });
+})();
+</script>
+{% endif %}
+{% endblock %}

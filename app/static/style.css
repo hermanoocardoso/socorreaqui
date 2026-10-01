@@ -770,6 +770,19 @@ details summary.ver-todas-categorias::-webkit-details-marker {
     font-weight: 600;
 }
 
+/* Atalho pro Painel do Dono, no topo do /admin (só aparece pro dono) */
+.painel-dono-atalho {
+    color: var(--cor-texto);
+    border: 1px solid #F0D98C;
+    background: linear-gradient(135deg, #FFFBEB, #fff);
+    transition: box-shadow var(--transicao), border-color var(--transicao);
+}
+.painel-dono-atalho:hover {
+    color: var(--cor-texto);
+    border-color: #E8C65A;
+    box-shadow: var(--sombra-hover);
+}
+
 /* Ícone redondo de categoria — ainda usado nos cards de serviço da home
    de visitante. */
 .category-icon {

@@ -49,6 +49,7 @@ class User(Base):
     bairro = Column(String(120), nullable=True)
     ativo = Column(Boolean, default=True, nullable=False)  # admin pode bloquear o login de uma conta
     criado_em = Column(DateTime, default=datetime.utcnow)
+    ultimo_login_em = Column(DateTime, nullable=True)  # atualizado a cada login (senha ou Google)
     # Quando o admin viu pela última vez o sino de notificações de novo
     # cadastro -- só é usado em quem é admin (ver ADMIN_EMAILS em main.py).
     notificacoes_vistas_em = Column(DateTime, nullable=True)

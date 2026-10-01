@@ -96,6 +96,9 @@ def _garantir_colunas_novas():
     if "notificacoes_vistas_em" not in colunas_users:
         with engine.begin() as conn:
             conn.execute(text("ALTER TABLE users ADD COLUMN notificacoes_vistas_em TIMESTAMP"))
+    if "ultimo_login_em" not in colunas_users:
+        with engine.begin() as conn:
+            conn.execute(text("ALTER TABLE users ADD COLUMN ultimo_login_em TIMESTAMP"))
 
     if "indicacoes" in inspetor.get_table_names():
         colunas_indicacoes = {c["name"] for c in inspetor.get_columns("indicacoes")}
@@ -224,6 +227,19 @@ ADMIN_EMAILS = [
 
 def _eh_email_admin(email: str | None) -> bool:
     return bool(email) and email.strip().lower() in ADMIN_EMAILS
+
+
+# Dono da plataforma: um nível acima de admin, só pra quem realmente é dono
+# do negócio (hoje só você). Admin comum (ex: a H2 Sistemas) continua com
+# acesso normal ao /admin, mas NÃO vê o /dono -- números consolidados,
+# gráfico de crescimento e a lista completa de usuários com filtro/busca.
+# Se DONO_EMAIL não estiver configurado, cai no primeiro e-mail de
+# ADMIN_EMAIL (hoje é hermanoocardoso@gmail.com, o primeiro da lista).
+DONO_EMAIL = os.getenv("DONO_EMAIL", "").strip().lower() or (ADMIN_EMAILS[0] if ADMIN_EMAILS else "")
+
+
+def _eh_email_dono(email: str | None) -> bool:
+    return bool(email) and bool(DONO_EMAIL) and email.strip().lower() == DONO_EMAIL
 
 
 def _avisar_admin_novo_cadastro(usuario: "models.User") -> None:
@@ -744,6 +760,7 @@ def _resultados_catalogo(
             "cidades_destaque": cidades_mais_ativas(db),
             "categorias_populares": categorias_populares(db),
             "eh_admin_usuario": eh_admin(usuario),
+            "eh_dono_usuario": eh_dono(usuario),
             "titulo_pagina": titulo_pagina,
             "meta_descricao_pagina": meta_descricao_pagina,
             "h1_pagina": h1_pagina,
@@ -1140,6 +1157,8 @@ def login(
         )
 
     _limpar_tentativas("login", chave_limite)
+    usuario.ultimo_login_em = datetime.utcnow()
+    db.commit()
     request.session["user_id"] = usuario.id
     return RedirectResponse(_next_seguro(next), status_code=303)
 
@@ -1329,15 +1348,12 @@ async def google_callback(request: Request, db: Session = Depends(get_db)):
                     "erro": "Essa conta foi bloqueada. Entre em contato com o suporte.",
                 },
             )
-        atualizado = False
         if not usuario.google_id:
             usuario.google_id = google_id
-            atualizado = True
         if not usuario.email_verificado:
             usuario.email_verificado = True
-            atualizado = True
-        if atualizado:
-            db.commit()
+        usuario.ultimo_login_em = datetime.utcnow()
+        db.commit()
         request.session["user_id"] = usuario.id
         return RedirectResponse(proximo, status_code=303)
 
@@ -1535,6 +1551,7 @@ def ver_profissional(
             "minha_avaliacao": minha_avaliacao,
             "pode_avaliar": pode_avaliar,
             "eh_admin_usuario": eh_admin(usuario),
+            "eh_dono_usuario": eh_dono(usuario),
         },
     )
 
@@ -1925,6 +1942,10 @@ def eh_admin(usuario) -> bool:
     return bool(usuario) and _eh_email_admin(usuario.email)
 
 
+def eh_dono(usuario) -> bool:
+    return bool(usuario) and _eh_email_dono(usuario.email)
+
+
 @app.get("/admin")
 def admin_painel(
     request: Request,
@@ -2022,6 +2043,160 @@ def admin_painel(
             "grupos_categorias": grupos_categorias,
             "emails_admin": ADMIN_EMAILS,
             "numeros": numeros,
+            "eh_dono_usuario": eh_dono(usuario),
+        },
+    )
+
+
+# ---------------------------------------------------------------------------
+# Painel do Dono (acima do admin comum -- só quem é DONO_EMAIL, ver eh_dono)
+# ---------------------------------------------------------------------------
+
+def _crescimento_mensal(db: Session) -> list[tuple[str, int]]:
+    """Total de usuários cadastrados, acumulado mês a mês, pro gráfico de
+    crescimento do Painel do Dono."""
+    datas = [
+        linha[0] for linha in db.query(models.User.criado_em).filter(models.User.criado_em.isnot(None)).all()
+    ]
+    por_mes: dict[str, int] = {}
+    for data in datas:
+        chave = data.strftime("%Y-%m")
+        por_mes[chave] = por_mes.get(chave, 0) + 1
+
+    acumulado = []
+    total = 0
+    for mes in sorted(por_mes):
+        total += por_mes[mes]
+        acumulado.append((mes, total))
+    return acumulado
+
+
+def _origem_cadastro(usuario: "models.User") -> str:
+    if usuario.tipo == "profissional" and usuario.perfil_profissional and usuario.perfil_profissional.criado_via_indicacao:
+        return "indicacao"
+    if usuario.google_id:
+        return "google"
+    return "direto"
+
+
+ORIGEM_ROTULOS = {"direto": "Cadastro direto", "google": "Google", "indicacao": "Indicação (admin)"}
+
+
+@app.get("/dono")
+def dono_painel(
+    request: Request,
+    db: Session = Depends(get_db),
+    usuario=Depends(auth.usuario_logado),
+):
+    if not eh_dono(usuario):
+        return RedirectResponse("/admin", status_code=303)
+
+    total_usuarios = db.query(models.User).count()
+    total_clientes = db.query(models.User).filter(models.User.tipo == "cliente").count()
+    total_profissionais = db.query(models.User).filter(models.User.tipo == "profissional").count()
+    total_aprovados = db.query(models.ProfessionalProfile).filter(
+        models.ProfessionalProfile.aprovado == True  # noqa: E712
+    ).count()
+    total_pendentes_aprovacao = db.query(models.ProfessionalProfile).filter(
+        models.ProfessionalProfile.aprovado == False  # noqa: E712
+    ).count()
+    total_bloqueados = db.query(models.User).filter(models.User.ativo == False).count()  # noqa: E712
+    sete_dias_atras = datetime.utcnow() - timedelta(days=7)
+    novos_7d = db.query(models.User).filter(models.User.criado_em >= sete_dias_atras).count()
+    total_indicacoes_pendentes = db.query(models.Indicacao).filter(models.Indicacao.status == "pendente").count()
+
+    atividade_recente = (
+        db.query(models.User).order_by(models.User.criado_em.desc()).limit(8).all()
+    )
+
+    return templates.TemplateResponse(
+        "dono.html",
+        {
+            "request": request,
+            "usuario": usuario,
+            "eh_dono_usuario": True,
+            "numeros": {
+                "total_usuarios": total_usuarios,
+                "total_clientes": total_clientes,
+                "total_profissionais": total_profissionais,
+                "total_aprovados": total_aprovados,
+                "total_pendentes_aprovacao": total_pendentes_aprovacao,
+                "total_bloqueados": total_bloqueados,
+                "novos_7d": novos_7d,
+                "total_indicacoes_pendentes": total_indicacoes_pendentes,
+            },
+            "crescimento_mensal": _crescimento_mensal(db),
+            "atividade_recente": atividade_recente,
+        },
+    )
+
+
+@app.get("/dono/usuarios")
+def dono_usuarios(
+    request: Request,
+    busca: str = "",
+    tipo: str = "",
+    status: str = "",
+    aprovacao: str = "",
+    origem: str = "",
+    db: Session = Depends(get_db),
+    usuario=Depends(auth.usuario_logado),
+):
+    if not eh_dono(usuario):
+        return RedirectResponse("/admin", status_code=303)
+
+    query = db.query(models.User)
+    busca = busca.strip()
+    if busca:
+        query = query.filter(or_(
+            models.User.nome.ilike(f"%{busca}%"),
+            models.User.email.ilike(f"%{busca}%"),
+        ))
+    if tipo in ("cliente", "profissional"):
+        query = query.filter(models.User.tipo == tipo)
+    if status == "ativo":
+        query = query.filter(models.User.ativo == True)  # noqa: E712
+    elif status == "bloqueado":
+        query = query.filter(models.User.ativo == False)  # noqa: E712
+    elif status == "email_nao_confirmado":
+        query = query.filter(models.User.email_verificado == False)  # noqa: E712
+
+    usuarios = query.order_by(models.User.criado_em.desc()).all()
+
+    if aprovacao in ("pendente", "aprovado", "pausado"):
+        def bate_aprovacao(u):
+            if u.tipo != "profissional" or not u.perfil_profissional:
+                return False
+            p = u.perfil_profissional
+            if aprovacao == "pendente":
+                return not p.aprovado
+            if aprovacao == "aprovado":
+                return p.aprovado and p.ativo
+            return p.aprovado and not p.ativo  # pausado
+        usuarios = [u for u in usuarios if bate_aprovacao(u)]
+
+    if origem in ORIGEM_ROTULOS:
+        usuarios = [u for u in usuarios if _origem_cadastro(u) == origem]
+
+    return templates.TemplateResponse(
+        "dono_usuarios.html",
+        {
+            "request": request,
+            "usuario": usuario,
+            "eh_dono_usuario": True,
+            "usuarios": usuarios,
+            "origem_cadastro": _origem_cadastro,
+            "origem_rotulos": ORIGEM_ROTULOS,
+            "emails_admin": ADMIN_EMAILS,
+            "total_usuarios": db.query(models.User).count(),
+            "total_clientes": db.query(models.User).filter(models.User.tipo == "cliente").count(),
+            "total_profissionais": db.query(models.User).filter(models.User.tipo == "profissional").count(),
+            "total_bloqueados": db.query(models.User).filter(models.User.ativo == False).count(),  # noqa: E712
+            "filtro_busca": busca,
+            "filtro_tipo": tipo,
+            "filtro_status": status,
+            "filtro_aprovacao": aprovacao,
+            "filtro_origem": origem,
         },
     )
 
@@ -2241,6 +2416,7 @@ def admin_form_editar_usuario(
             "request": request,
             "usuario": usuario,
             "eh_admin_usuario": True,
+            "eh_dono_usuario": eh_dono(usuario),
             "alvo": alvo,
             "eh_conta_admin": _eh_email_admin(alvo.email),
             "erro": None,
@@ -2287,6 +2463,7 @@ def admin_salvar_usuario(
                 "request": request,
                 "usuario": usuario,
                 "eh_admin_usuario": True,
+                "eh_dono_usuario": eh_dono(usuario),
                 "alvo": alvo,
                 "eh_conta_admin": eh_conta_admin,
                 "erro": mensagem,
