@@ -54,7 +54,7 @@
         {% for grupo_nome, cats in categorias_por_grupo %}
         <div class="categorias-perfil-grupo">
             <h6 class="categorias-perfil-titulo">
-                <span aria-hidden="true">{{ grupo_emoji(grupo_nome) }}</span> {{ grupo_nome }}
+                <span aria-hidden="true">{{ grupo_icone(grupo_nome) }}</span> {{ grupo_nome }}
             </h6>
             <div class="row">
                 {% for c in cats %}
@@ -64,7 +64,7 @@
                             id="cat{{ c.id }}" {% if c.id in categorias_selecionadas %}checked{% endif %}
                             {% if c.nome == "Médico" %}data-categoria-medico="1" onchange="toggleInfoMedica()"{% endif %}>
                         <label class="form-check-label" for="cat{{ c.id }}">
-                            <span aria-hidden="true">{{ categoria_emoji(c.nome) }}</span> {{ c.nome }}
+                            <span aria-hidden="true">{{ categoria_icone(c.nome) }}</span> {{ c.nome }}
                         </label>
                     </div>
                 </div>
@@ -92,7 +92,7 @@
     </div>
 
     <div id="infoMedicaWrap" class="info-medica p-3 mb-3" style="display:none;">
-        <h6 class="mb-3">🩺 Informações médicas</h6>
+        <h6 class="mb-3"><i data-lucide="stethoscope" class="icone-lucide" aria-hidden="true"></i> Informações médicas</h6>
         <p class="text-muted small">
             Essas informações aparecem no seu perfil público e ajudam o paciente
             a decidir com mais confiança — e o admin usa o CRM pra conferir antes de aprovar seu cadastro.

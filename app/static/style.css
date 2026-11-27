@@ -28,7 +28,7 @@
 }
 
 body {
-    font-family: 'Poppins', system-ui, -apple-system, sans-serif;
+    font-family: 'Montserrat', system-ui, -apple-system, sans-serif;
     background-color: var(--cor-fundo);
     color: var(--cor-texto);
 }
@@ -1945,4 +1945,57 @@ img.foto-atual-thumb.img-logo {
 }
 @media (prefers-reduced-motion: reduce) {
     .ticker-recentes-trilha { animation: none; }
+}
+
+/* ---------- Ícones Lucide (substituem emojis funcionais) ---------- */
+.icone-lucide {
+    width: 1.05em;
+    height: 1.05em;
+    vertical-align: -0.15em;
+    stroke-width: 2;
+    flex-shrink: 0;
+}
+.icone-grande {
+    width: 1.9em;
+    height: 1.9em;
+    vertical-align: middle;
+}
+.icone-estrela {
+    color: #F59E0B;
+    fill: #F59E0B;
+}
+
+/* Bolinha de disponibilidade: a cor vem junto com o texto (não só a cor). */
+.status-bolinha {
+    display: inline-block;
+    width: 0.55em;
+    height: 0.55em;
+    margin-right: 0.4em;
+    border-radius: 50%;
+    background: #9CA3AF;
+    vertical-align: middle;
+}
+.status-agora .status-bolinha { background: #15803D; }
+.status-hoje .status-bolinha { background: #D97706; }
+.status-indisponivel .status-bolinha { background: #9CA3AF; }
+
+@media (prefers-reduced-motion: reduce) {
+    .icone-lucide { transition: none; }
+}
+
+/* ---------- Alvos de toque (WCAG 2.2 AA: 44 px mínimo em telas de toque) ---------- */
+@media (pointer: coarse) {
+    .btn,
+    .btn-sm,
+    .btn-chip,
+    .cat-chip,
+    .link-acao,
+    .menu-lateral-item,
+    .cidades-outras summary {
+        min-height: 44px;
+    }
+    .btn-sm {
+        padding-top: 0.5rem;
+        padding-bottom: 0.5rem;
+    }
 }

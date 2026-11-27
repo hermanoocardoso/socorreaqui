@@ -39,7 +39,7 @@
         </div>
         <div class="col">
             <div class="text-muted small">Nota média geral</div>
-            <div class="fs-3 fw-semibold">{{ "⭐ " + numeros.media_geral|string if numeros.media_geral else "—" }}</div>
+            <div class="fs-3 fw-semibold">{% if numeros.media_geral %}<i data-lucide="star" class="icone-lucide icone-estrela" aria-hidden="true"></i> {{ numeros.media_geral|string }}{% else %}—{% endif %}</div>
         </div>
         <div class="col">
             <div class="text-muted small">Indicações pendentes</div>
@@ -104,7 +104,7 @@
         {% for grupo_nome, cats in categorias_por_grupo %}
         <div class="categorias-admin-grupo">
             <h6 class="categorias-admin-titulo">
-                <span aria-hidden="true">{{ grupo_emoji(grupo_nome) }}</span> {{ grupo_nome }}
+                <span aria-hidden="true">{{ grupo_icone(grupo_nome) }}</span> {{ grupo_nome }}
                 <span class="text-muted fw-normal">({{ cats|length }})</span>
             </h6>
             <div class="table-responsive">
@@ -121,8 +121,8 @@
                 {% for c in cats %}
                     <tr>
                         <td class="text-center fs-5"
-                            title="{% if not categoria_tem_icone(c.nome) %}Sem ícone próprio -- usando o genérico 🔧{% endif %}">
-                            {{ categoria_emoji(c.nome) }}
+                            title="{% if not categoria_tem_icone(c.nome) %}Sem ícone próprio -- usando o genérico{% endif %}">
+                            {{ categoria_icone(c.nome) }}
                             {% if not categoria_tem_icone(c.nome) %}
                                 <br><span class="badge bg-warning text-dark categorias-admin-badge-generico">genérico</span>
                             {% endif %}
@@ -187,7 +187,7 @@
                     {% for c in p.categorias %}{{ c.nome }}{% if not loop.last %}, {% endif %}{% endfor %}
                     {% if p.eh_medico %}
                     <br>
-                    <span class="badge bg-warning text-dark">🩺 confira o CRM antes de aprovar</span>
+                    <span class="badge bg-warning text-dark"><i data-lucide="stethoscope" class="icone-lucide" aria-hidden="true"></i> confira o CRM antes de aprovar</span>
                     <div class="small text-muted mt-1">
                         CRM: {{ p.crm or "não informado" }}<br>
                         {% if p.especialidade_medica %}Especialidade: {{ p.especialidade_medica }}{% endif %}
@@ -229,7 +229,7 @@
                     {% if p.usuario.email in emails_admin %}<span class="badge bg-secondary">admin do painel</span>{% endif %}
                 </td>
                 <td>{{ p.cidade }}</td>
-                <td>⭐ {{ p.nota_media }} ({{ p.total_avaliacoes }})</td>
+                <td><i data-lucide="star" class="icone-lucide icone-estrela" aria-hidden="true"></i> {{ p.nota_media }} ({{ p.total_avaliacoes }})</td>
                 <td>
                     {{ "Ativo" if p.ativo else "Pausado" }}
                     {% if not p.usuario.ativo %}<br><span class="badge bg-danger">login bloqueado</span>{% endif %}
@@ -324,7 +324,7 @@
                         <select name="categoria_id" class="form-select form-select-sm" style="min-width:140px">
                             <option value="">-- sem categoria --</option>
                             {% for grupo_nome, cats in categorias_por_grupo %}
-                            <optgroup label="{{ grupo_emoji(grupo_nome) }} {{ grupo_nome }}">
+                            <optgroup label="{{ grupo_nome }}">
                                 {% for c in cats %}
                                 <option value="{{ c.id }}" {% if i.categoria_id == c.id %}selected{% endif %}>{{ c.nome }}</option>
                                 {% endfor %}

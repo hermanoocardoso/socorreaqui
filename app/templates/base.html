@@ -19,7 +19,7 @@
     <meta name="twitter:card" content="summary_large_image">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="/static/style.css?v={{ css_version }}" rel="stylesheet">
 
@@ -59,7 +59,7 @@
                     <button class="btn btn-outline-light btn-sm dropdown-toggle position-relative" type="button"
                             id="botaoNotificacoesAdmin" data-bs-toggle="dropdown" aria-expanded="false"
                             title="Notificações de novo cadastro">
-                        🔔
+                        <i data-lucide="bell" class="icone-lucide" aria-hidden="true"></i>
                         <span class="badge rounded-pill bg-danger notificacoes-badge d-none" id="badgeNotificacoesAdmin">0</span>
                     </button>
                     <ul class="dropdown-menu dropdown-menu-end notificacoes-lista" id="listaNotificacoesAdmin">
@@ -114,33 +114,33 @@
         </div>
         <div class="offcanvas-body">
             <nav class="menu-lateral-lista" aria-label="Menu principal">
-                <a href="/" class="menu-lateral-item"><span aria-hidden="true">🏠</span> Início</a>
-                <a href="/?explorar=1" class="menu-lateral-item"><span aria-hidden="true">🔎</span> Encontrar profissional</a>
+                <a href="/" class="menu-lateral-item"><span aria-hidden="true"><i data-lucide="house" class="icone-lucide" aria-hidden="true"></i></span> Início</a>
+                <a href="/?explorar=1" class="menu-lateral-item"><span aria-hidden="true"><i data-lucide="search" class="icone-lucide" aria-hidden="true"></i></span> Encontrar profissional</a>
 
                 {% if usuario %}
                     {% if usuario.tipo == "profissional" %}
-                        <a href="/profissional/perfil/editar" class="menu-lateral-item"><span aria-hidden="true">🛠️</span> Meu perfil profissional</a>
+                        <a href="/profissional/perfil/editar" class="menu-lateral-item"><span aria-hidden="true"><i data-lucide="wrench" class="icone-lucide" aria-hidden="true"></i></span> Meu perfil profissional</a>
                         {% if usuario.perfil_profissional and usuario.perfil_profissional.aprovado %}
-                            <a href="/profissional/{{ usuario.perfil_profissional.id }}" class="menu-lateral-item"><span aria-hidden="true">⭐</span> Meu perfil público</a>
+                            <a href="/profissional/{{ usuario.perfil_profissional.id }}" class="menu-lateral-item"><span aria-hidden="true"><i data-lucide="star" class="icone-lucide" aria-hidden="true"></i></span> Meu perfil público</a>
                         {% endif %}
                     {% else %}
-                        <a href="/comecar?tipo=profissional" class="menu-lateral-item"><span aria-hidden="true">🛠️</span> Sou profissional</a>
+                        <a href="/comecar?tipo=profissional" class="menu-lateral-item"><span aria-hidden="true"><i data-lucide="wrench" class="icone-lucide" aria-hidden="true"></i></span> Sou profissional</a>
                     {% endif %}
-                    <a href="/minha-localizacao" class="menu-lateral-item"><span aria-hidden="true">⚙️</span> Meus dados</a>
-                    <a href="/indicar" class="menu-lateral-item"><span aria-hidden="true">🤝</span> Indicar profissional</a>
-                    <a href="/#como-funciona" class="menu-lateral-item"><span aria-hidden="true">ℹ️</span> Como funciona</a>
+                    <a href="/minha-localizacao" class="menu-lateral-item"><span aria-hidden="true"><i data-lucide="settings" class="icone-lucide" aria-hidden="true"></i></span> Meus dados</a>
+                    <a href="/indicar" class="menu-lateral-item"><span aria-hidden="true"><i data-lucide="handshake" class="icone-lucide" aria-hidden="true"></i></span> Indicar profissional</a>
+                    <a href="/#como-funciona" class="menu-lateral-item"><span aria-hidden="true"><i data-lucide="info" class="icone-lucide" aria-hidden="true"></i></span> Como funciona</a>
                     {% if eh_admin_usuario %}
                         <hr class="menu-lateral-divisor">
-                        <a href="/admin" class="menu-lateral-item"><span aria-hidden="true">🛡️</span> Administração</a>
+                        <a href="/admin" class="menu-lateral-item"><span aria-hidden="true"><i data-lucide="shield-check" class="icone-lucide" aria-hidden="true"></i></span> Administração</a>
                     {% endif %}
                     {% if eh_dono_usuario %}
                         <a href="/dono" class="menu-lateral-item"><span aria-hidden="true">👑</span> Painel do Dono</a>
                     {% endif %}
                     <hr class="menu-lateral-divisor">
-                    <a href="/logout" class="menu-lateral-item menu-lateral-item-sair"><span aria-hidden="true">🚪</span> Sair</a>
+                    <a href="/logout" class="menu-lateral-item menu-lateral-item-sair"><span aria-hidden="true"><i data-lucide="log-out" class="icone-lucide" aria-hidden="true"></i></span> Sair</a>
                 {% else %}
-                    <a href="/comecar?tipo=profissional" class="menu-lateral-item"><span aria-hidden="true">🛠️</span> Sou profissional</a>
-                    <a href="/#como-funciona" class="menu-lateral-item"><span aria-hidden="true">ℹ️</span> Como funciona</a>
+                    <a href="/comecar?tipo=profissional" class="menu-lateral-item"><span aria-hidden="true"><i data-lucide="wrench" class="icone-lucide" aria-hidden="true"></i></span> Sou profissional</a>
+                    <a href="/#como-funciona" class="menu-lateral-item"><span aria-hidden="true"><i data-lucide="info" class="icone-lucide" aria-hidden="true"></i></span> Como funciona</a>
                     <hr class="menu-lateral-divisor">
                     <div class="d-grid gap-2 mt-1">
                         <a href="/comecar?tipo=cliente" class="btn btn-primary fw-semibold">Criar conta grátis</a>
@@ -196,6 +196,10 @@
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    {# Ícones Lucide (funcionais). Os <i data-lucide> viram SVG aqui; sem JS o
+       ícone some mas o texto ao lado continua legível. #}
+    <script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+    <script>if (window.lucide) { lucide.createIcons(); }</script>
     <script>
     (function () {
         // Header encolhe discretamente ao rolar — nada de esconder, só um

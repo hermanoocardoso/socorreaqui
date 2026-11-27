@@ -412,100 +412,109 @@ ESPECIALIDADES_MEDICAS = [
     "Geriatra",
 ]
 
-# Ícone (emoji) de cada categoria, usado na fileira de categorias da home e
-# nos cards do catálogo. Categoria nova/"Outro" que não estiver aqui cai no
-# ícone genérico 🔧.
-CATEGORIA_EMOJIS = {
-    "Eletricista": "⚡",
-    "Encanador": "🚿",
-    "Vidraceiro": "🪟",
-    "Pedreiro / Reformas": "🧱",
-    "Pintor": "🎨",
-    "Gesseiro": "🏗️",
-    "Serralheiro": "🛠️",
-    "Marceneiro": "🪚",
-    "Chaveiro": "🔑",
-    "Marido de aluguel": "🔧",
-    "Telhadista / Impermeabilização": "🏚️",
-    "Gás": "🔥",
+# Ícone Lucide de cada categoria (nome usado em `data-lucide`), na fileira de
+# categorias da home, nos cards e nos menus. Categoria nova/"Outro" que não
+# estiver aqui cai no ícone genérico. Os nomes são do Lucide 0.460.0 (ver base.html).
+ICONE_GENERICO = "wrench"
 
-    "Diarista / Faxina": "🧹",
-    "Dedetização": "🐜",
-    "Montador de móveis": "🪑",
-    "Piscineiro": "🏊",
-    "Jardinagem": "🌳",
-    "Ar-condicionado / Refrigeração": "❄️",
-    "Tapeceiro / Estofados": "🛋️",
-    "Limpeza pós-obra": "🧽",
+CATEGORIA_ICONES = {
+    "Eletricista": "zap",
+    "Encanador": "droplet",
+    "Vidraceiro": "app-window",
+    "Pedreiro / Reformas": "brick-wall",
+    "Pintor": "paint-roller",
+    "Gesseiro": "layers",
+    "Serralheiro": "hammer",
+    "Marceneiro": "ruler",
+    "Chaveiro": "key-round",
+    "Marido de aluguel": "wrench",
+    "Telhadista / Impermeabilização": "house",
+    "Gás": "flame",
 
-    "Mecânico/Oficina": "🔩",
-    "Auto elétrico": "🔋",
-    "Funilaria e Pintura": "🚙",
-    "Guincho": "🚛",
-    "Lavagem de carros": "🧼",
+    "Diarista / Faxina": "sparkles",
+    "Dedetização": "bug",
+    "Montador de móveis": "armchair",
+    "Piscineiro": "waves",
+    "Jardinagem": "trees",
+    "Ar-condicionado / Refrigeração": "snowflake",
+    "Tapeceiro / Estofados": "sofa",
+    "Limpeza pós-obra": "spray-can",
 
-    "Informática & Tecnologia": "💻",
-    "Conserto de celular": "📱",
-    "Instalação de câmeras / CFTV": "🎥",
-    "Assistência de eletrônicos": "🔌",
+    "Mecânico/Oficina": "cog",
+    "Auto elétrico": "battery-charging",
+    "Funilaria e Pintura": "car-front",
+    "Guincho": "truck",
+    "Lavagem de carros": "car",
 
-    "Médico": "🩺",
-    "Dentista": "🦷",
-    "Babá": "👶",
-    "Cuidador de idosos": "🧓",
-    "Personal trainer": "🏋️",
-    "Fisioterapeuta": "🦵",
-    "Psicólogo": "🧠",
-    "Nutricionista": "🥗",
+    "Informática & Tecnologia": "cpu",
+    "Conserto de celular": "smartphone",
+    "Instalação de câmeras / CFTV": "camera",
+    "Assistência de eletrônicos": "plug",
 
-    "Cabeleireiro": "💇",
-    "Manicure": "💅",
-    "Podóloga": "🦶",
-    "Barbeiro": "💈",
-    "Salão de Beleza": "✂️",
-    "Maquiador(a)": "💄",
-    "Fotógrafo": "📸",
-    "Confeiteiro(a) / Doceiro(a)": "🧁",
-    "Buffet / Garçom": "🍽️",
-    "DJ / Som": "🎵",
-    "Decoração de festas": "🎈",
+    "Médico": "stethoscope",
+    "Dentista": "smile",
+    "Babá": "baby",
+    "Cuidador de idosos": "heart-handshake",
+    "Personal trainer": "dumbbell",
+    "Fisioterapeuta": "footprints",
+    "Psicólogo": "brain",
+    "Nutricionista": "salad",
 
-    "Aulas particulares": "📖",
-    "Professor de idiomas": "🗣️",
-    "Contador": "📊",
-    "Advogado": "⚖️",
+    "Cabeleireiro": "scissors",
+    "Manicure": "hand",
+    "Podóloga": "footprints",
+    "Barbeiro": "scissors",
+    "Salão de Beleza": "wand-sparkles",
+    "Maquiador(a)": "wand-sparkles",
+    "Fotógrafo": "image",
+    "Confeiteiro(a) / Doceiro(a)": "cake",
+    "Buffet / Garçom": "utensils",
+    "DJ / Som": "music",
+    "Decoração de festas": "party-popper",
 
-    "Frete / Mudança": "🚚",
-    "Motoboy / Entregador": "🛵",
-    "Motorista Particular / Uber": "🚕",
+    "Aulas particulares": "book-open",
+    "Professor de idiomas": "languages",
+    "Contador": "calculator",
+    "Advogado": "scale",
+
+    "Frete / Mudança": "truck",
+    "Motoboy / Entregador": "bike",
+    "Motorista Particular / Uber": "car-front",
 
     # Categorias criadas pelo admin depois da lista original acima (via painel
-    # /admin) -- sem ícone próprio elas caem no genérico 🔧 e destoam das
-    # demais no menu/grade do catálogo, por isso ganham entrada aqui também.
-    "Gás encanado": "🛢️",
-    "Blogueiro(a)": "✍️",
-    "Cesta de Café da Manhã": "🧺",
-    "Serviços domésticoa": "🏡",  # nome como está cadastrado hoje (tem um erro de digitação -- ver painel admin)
-    "Serviços Técnicos": "🧰",
-    "Técnico em TV": "📺",
+    # /admin) -- sem ícone próprio elas caem no genérico e destoam das demais
+    # no menu/grade do catálogo, por isso ganham entrada aqui também.
+    "Gás encanado": "flame",
+    "Blogueiro(a)": "pen-tool",
+    "Cesta de Café da Manhã": "coffee",
+    "Serviços domésticoa": "house",  # nome como está cadastrado hoje (tem um erro de digitação -- ver painel admin)
+    "Serviços Técnicos": "settings-2",
+    "Técnico em TV": "tv",
 }
-templates.env.globals["categoria_emoji"] = lambda nome: CATEGORIA_EMOJIS.get(nome, "🔧")
 
-# Ícone de cada grupo amplo (usado no menu de categorias, estilo "mega menu").
-GRUPO_EMOJIS = {
-    "Casa e Reformas": "🏠",
-    "Limpeza e Manutenção": "🧹",
-    "Carros e Motos": "🚗",
-    "Tecnologia": "💻",
-    "Saúde e Família": "🩺",
-    "Beleza e Autocuidado": "💅",
-    "Eventos": "🎉",
-    "Aulas e Consultoria": "📚",
-    "Transporte": "🚚",
-    "Outros": "🗂️",  # categoria criada sem grupo (ex: "Outro" no cadastro) cai aqui
+
+def _icone_html(nome: str) -> Markup:
+    """Marca o ícone Lucide; o JS da base.html troca por SVG na carga da página."""
+    return Markup(f'<i data-lucide="{nome}" class="icone-lucide" aria-hidden="true"></i>')
+
+
+templates.env.globals["categoria_icone"] = lambda nome: _icone_html(CATEGORIA_ICONES.get(nome, ICONE_GENERICO))
+templates.env.globals["categoria_tem_icone"] = lambda nome: nome in CATEGORIA_ICONES
+
+# Ícone de cada grupo amplo (menu de categorias, estilo "mega menu").
+GRUPO_ICONES = {
+    "Casa e Reformas": "house",
+    "Limpeza e Manutenção": "sparkles",
+    "Carros e Motos": "car",
+    "Tecnologia": "cpu",
+    "Saúde e Família": "stethoscope",
+    "Beleza e Autocuidado": "wand-sparkles",
+    "Eventos": "party-popper",
+    "Aulas e Consultoria": "book-open",
+    "Transporte": "truck",
+    "Outros": "layout-grid",  # categoria criada sem grupo (ex: "Outro" no cadastro) cai aqui
 }
-templates.env.globals["grupo_emoji"] = lambda nome: GRUPO_EMOJIS.get(nome, "🔧")
-templates.env.globals["categoria_tem_icone"] = lambda nome: nome in CATEGORIA_EMOJIS
+templates.env.globals["grupo_icone"] = lambda nome: _icone_html(GRUPO_ICONES.get(nome, ICONE_GENERICO))
 
 # Categorias mostradas em destaque na home de quem não está logado —
 # curadoria manual das mais buscadas, pra não sobrecarregar a tela
@@ -526,13 +535,13 @@ CATEGORIAS_DESTAQUE_LANDING = [
 # Atalho rápido de categorias no topo da busca (mobile e desktop): as 5 mais
 # procuradas, com rótulo curto pra caber num chip pequeno. NENHUMA categoria
 # é removida do site -- as ~50 continuam acessíveis pelo "Ver todas" e pelo
-# menu por grupo. Cada item é (nome real da categoria, rótulo curto, emoji).
+# menu por grupo. Cada item é (nome real da categoria, rótulo curto, ícone Lucide).
 CATEGORIAS_POPULARES = [
-    ("Eletricista", "Eletricista", "⚡"),
-    ("Encanador", "Encanador", "🚿"),
-    ("Mecânico/Oficina", "Mecânico", "🔧"),
-    ("Diarista / Faxina", "Limpeza", "🧹"),
-    ("Informática & Tecnologia", "Tecnologia", "💻"),
+    ("Eletricista", "Eletricista", "zap"),
+    ("Encanador", "Encanador", "droplet"),
+    ("Mecânico/Oficina", "Mecânico", "cog"),
+    ("Diarista / Faxina", "Limpeza", "sparkles"),
+    ("Informática & Tecnologia", "Tecnologia", "cpu"),
 ]
 
 
@@ -547,8 +556,8 @@ def categorias_populares(db: Session) -> list[dict]:
         .all()
     }
     return [
-        {"id": por_nome[nome].id, "rotulo": rotulo, "emoji": emoji}
-        for nome, rotulo, emoji in CATEGORIAS_POPULARES
+        {"id": por_nome[nome].id, "rotulo": rotulo, "icone": _icone_html(icone)}
+        for nome, rotulo, icone in CATEGORIAS_POPULARES
         if nome in por_nome
     ]
 
@@ -638,7 +647,7 @@ def cidades_mais_ativas(db: Session, limite: int = 6) -> list[str]:
 
 
 def _categorias_agrupadas(db: Session):
-    """Categorias organizadas em grupos amplos, na ordem de GRUPO_EMOJIS
+    """Categorias organizadas em grupos amplos, na ordem de GRUPO_ICONES
     (e alfabética dentro de cada grupo) -- mesma organização usada no mega
     menu da home, no checklist de categorias do profissional e no painel
     admin, pra tudo ficar consistente em vez de listas soltas e desalinhadas
@@ -648,7 +657,7 @@ def _categorias_agrupadas(db: Session):
     por_grupo = {}
     for c in categorias:
         por_grupo.setdefault(c.grupo or "Outros", []).append(c)
-    ordem_grupos = list(GRUPO_EMOJIS.keys()) + [g for g in por_grupo if g not in GRUPO_EMOJIS]
+    ordem_grupos = list(GRUPO_ICONES.keys()) + [g for g in por_grupo if g not in GRUPO_ICONES]
     return [(g, por_grupo[g]) for g in ordem_grupos if g in por_grupo]
 
 
