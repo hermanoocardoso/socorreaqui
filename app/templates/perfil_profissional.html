@@ -99,7 +99,7 @@
             <a class="btn btn-secundario w-100" href="tel:{{ perfil.usuario.telefone }}"><i data-lucide="phone" class="icone-lucide" aria-hidden="true"></i> {{ perfil.usuario.telefone }}</a>
             {% endif %}
         {% else %}
-            <a class="btn btn-whats btn-lg w-100 perfil-acao-whats" href="/comecar?tipo=cliente">
+            <a class="btn btn-whats btn-lg w-100 perfil-acao-whats" href="/comecar?tipo=cliente&next={{ ('/profissional/' ~ perfil.id) | urlencode }}">
                 {{ whatsapp_icon(18) }} Entrar para chamar no WhatsApp
             </a>
             <p class="perfil-acoes-aviso">Criar uma conta é grátis e leva menos de um minuto.</p>
@@ -125,40 +125,6 @@
     {% elif perfil.atende_convenio == False %}
         <p class="mb-0"><span class="badge bg-secondary"><i data-lucide="credit-card" class="icone-lucide" aria-hidden="true"></i> Atendimento particular (sem convênio)</span></p>
     {% endif %}
-</section>
-{% endif %}
-
-{% if perfil.descricao %}
-<section class="perfil-secao">
-    <h2 class="perfil-secao-titulo">Sobre</h2>
-    <p class="mb-0">{{ perfil.descricao }}</p>
-</section>
-{% endif %}
-
-<section class="perfil-secao">
-    <h2 class="perfil-secao-titulo">Serviços</h2>
-    <p class="perfil-tags mb-0">
-        {% for cat in perfil.categorias %}
-            <span class="badge bg-secondary">{{ categoria_icone(cat.nome) }} {{ cat.nome }}</span>
-        {% endfor %}
-        {% if perfil.atende_domicilio %}
-            <span class="badge bg-info text-dark"><i data-lucide="house" class="icone-lucide" aria-hidden="true"></i> Atende em domicílio</span>
-        {% endif %}
-    </p>
-    {% if perfil.valor_mao_de_obra %}
-        <p class="mb-0 mt-2"><strong>Valor:</strong> {{ perfil.valor_mao_de_obra }}</p>
-    {% endif %}
-</section>
-
-{% if perfil.cidade or perfil.bairro or perfil.endereco %}
-<section class="perfil-secao">
-    <h2 class="perfil-secao-titulo">Área de atendimento</h2>
-    <p class="mb-0">
-        <i data-lucide="map-pin" class="icone-lucide" aria-hidden="true"></i>
-        {%- if perfil.bairro and perfil.bairro.strip().lower() != (perfil.cidade or '').strip().lower() %} {{ perfil.bairro }},{% endif %}
-        {{ perfil.cidade or '' }}
-    </p>
-    {% if perfil.endereco %}<p class="text-muted small mb-0 mt-1">{{ perfil.endereco }}</p>{% endif %}
 </section>
 {% endif %}
 
@@ -235,6 +201,40 @@
     {% endif %}
 </section>
 
+{% if perfil.descricao %}
+<section class="perfil-secao">
+    <h2 class="perfil-secao-titulo">Sobre</h2>
+    <p class="mb-0">{{ perfil.descricao }}</p>
+</section>
+{% endif %}
+
+<section class="perfil-secao">
+    <h2 class="perfil-secao-titulo">Serviços</h2>
+    <p class="perfil-tags mb-0">
+        {% for cat in perfil.categorias %}
+            <span class="badge bg-secondary">{{ categoria_icone(cat.nome) }} {{ cat.nome }}</span>
+        {% endfor %}
+        {% if perfil.atende_domicilio %}
+            <span class="badge bg-info text-dark"><i data-lucide="house" class="icone-lucide" aria-hidden="true"></i> Atende em domicílio</span>
+        {% endif %}
+    </p>
+    {% if perfil.valor_mao_de_obra %}
+        <p class="mb-0 mt-2"><strong>Valor:</strong> {{ perfil.valor_mao_de_obra }}</p>
+    {% endif %}
+</section>
+
+{% if perfil.cidade or perfil.bairro or perfil.endereco %}
+<section class="perfil-secao">
+    <h2 class="perfil-secao-titulo">Área de atendimento</h2>
+    <p class="mb-0">
+        <i data-lucide="map-pin" class="icone-lucide" aria-hidden="true"></i>
+        {%- if perfil.bairro and perfil.bairro.strip().lower() != (perfil.cidade or '').strip().lower() %} {{ perfil.bairro }},{% endif %}
+        {{ perfil.cidade or '' }}
+    </p>
+    {% if perfil.endereco %}<p class="text-muted small mb-0 mt-1">{{ perfil.endereco }}</p>{% endif %}
+</section>
+{% endif %}
+
 {% if usuario %}
 <section class="perfil-secao">
     <h2 class="perfil-secao-titulo">Contato</h2>
@@ -261,7 +261,7 @@
         {{ whatsapp_icon(20) }} Chamar no WhatsApp
     </a>
     {% else %}
-    <a href="/comecar?tipo=cliente" class="btn btn-whats btn-lg w-100 fw-semibold">
+    <a href="/comecar?tipo=cliente&next={{ ('/profissional/' ~ perfil.id) | urlencode }}" class="btn btn-whats btn-lg w-100 fw-semibold">
         {{ whatsapp_icon(20) }} Entrar para chamar no WhatsApp
     </a>
     {% endif %}

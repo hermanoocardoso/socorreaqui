@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block titulo %}{{ pagina.titulo }} — SocorreAqui{% endblock %}
+{% block meta_descricao %}{{ pagina.descricao }}{% endblock %}
+
+{% block conteudo %}
+<article class="institucional">
+    <p class="mb-3"><a href="/" class="link-acao">&larr; Voltar ao início</a></p>
+    <h1 class="institucional-titulo">{{ pagina.titulo }}</h1>
+
+    {% if minuta_em_revisao %}
+    <div class="alert alert-warning" role="status">
+        <strong>Minuta em revisão.</strong>
+        Este texto ainda não foi aprovado para publicação definitiva. Os trechos marcados como “a informar” precisam ser preenchidos.
+    </div>
+    {% endif %}
+
+    {% for titulo_secao, paragrafos in pagina.secoes %}
+    <section class="institucional-secao">
+        <h2 class="h5 fw-semibold">{{ titulo_secao }}</h2>
+        {% for paragrafo in paragrafos %}
+        <p>{{ paragrafo | replace("[a informar]", '<mark class="a-informar">a informar</mark>') | safe }}</p>
+        {% endfor %}
+    </section>
+    {% endfor %}
+</article>
+{% endblock %}

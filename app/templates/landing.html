@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% from "_componentes.html" import card_profissional with context %}
+{% from "_componentes.html" import card_profissional, linha_localizacao with context %}
 {% block titulo %}SocorreAqui — precisou, encontrou. 🏃🔧⚡️{% endblock %}
 
 {% block conteudo %}
@@ -53,20 +53,7 @@
                 </div>
             </div>
 
-            <div class="busca-local-linha">
-                <button type="button" id="btnLocalizacaoHero" class="link-acao"><i data-lucide="map-pin" class="icone-lucide" aria-hidden="true"></i> Usar minha localização</button>
-                {% if cidades_destaque %}
-                <details class="cidades-outras">
-                    <summary>Trocar cidade</summary>
-                    <div class="cidades-outras-lista">
-                        {% for c in cidades_destaque %}
-                            <a href="/?cidade={{ c | urlencode }}" class="btn-chip">{{ c }}</a>
-                        {% endfor %}
-                    </div>
-                </details>
-                {% endif %}
-            </div>
-            <p id="statusLocalizacaoHero" class="busca-local-status" role="status"></p>
+            {{ linha_localizacao("btnLocalizacaoHero", "statusLocalizacaoHero", cidades_destaque) }}
 
             {# Categorias populares logo abaixo da busca: no celular dá pra
                escolher um serviço sem precisar rolar a tela. As ~50 categorias
@@ -340,7 +327,7 @@
 <p class="text-muted text-center mb-4 reveal">Já estão no catálogo, prontos pra ajudar.</p>
 <div class="resultados-grade mb-5 reveal">
     {% for p in profissionais_destaque %}
-        {{ card_profissional(p, exigir_login=True) }}
+        {{ card_profissional(p) }}
     {% endfor %}
 </div>
 {% endif %}
