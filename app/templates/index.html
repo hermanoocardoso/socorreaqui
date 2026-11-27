@@ -1,72 +1,7 @@
 {% extends "base.html" %}
 {% block titulo %}{{ titulo_pagina or "SocorreAqui — precisou, encontrou. 🏃🔧⚡️" }}{% endblock %}
+{% from "_componentes.html" import card_profissional with context %}
 {% block meta_descricao %}{{ meta_descricao_pagina or "Encontre eletricistas, diaristas, manicures, mecânicos e outros profissionais da sua região. Cadastro gratuito, contato direto pelo WhatsApp." }}{% endblock %}
-
-{% macro card_profissional(p) %}
-<article class="card-prof">
-    <a href="/profissional/{{ p.id }}" class="card-prof-foto" tabindex="-1" aria-hidden="true">
-        {% if p.foto_url %}
-            <img src="{{ p.foto_url }}" alt="" loading="lazy" decoding="async"
-                 class="{% if p.foto_e_logo %}img-logo{% endif %}">
-        {% else %}
-            {# Avatar padrão: inicial do nome, no lugar de um bloco vazio grande. #}
-            <span class="card-prof-avatar">{{ p.usuario.nome.strip()[0] | upper }}</span>
-        {% endif %}
-    </a>
-
-    <div class="card-prof-info">
-        <h3 class="card-prof-nome">
-            <a href="/profissional/{{ p.id }}">{{ p.usuario.nome }}</a>
-            {% if p.criado_via_indicacao %}<span class="selo selo-indicado">Indicado</span>{% endif %}
-        </h3>
-
-        {% if (p.eh_medico and p.especialidade_medica) or p.categorias %}
-        <p class="card-prof-categoria">
-            {% if p.eh_medico and p.especialidade_medica %}
-                🩺 {{ p.especialidade_medica }}
-            {% else %}
-                {{ categoria_emoji(p.categorias[0].nome) }} {{ p.categorias[0].nome }}
-                {% if p.categorias|length > 1 %}<span class="card-prof-mais">+{{ p.categorias|length - 1 }}</span>{% endif %}
-            {% endif %}
-        </p>
-        {% endif %}
-
-        <p class="card-prof-local">📍 {% if p.bairro and p.bairro.strip().lower() != (p.cidade or '').strip().lower() %}{{ p.bairro }}, {% endif %}{{ p.cidade or '' }}</p>
-
-        <p class="card-prof-nota">
-            {% if p.total_avaliacoes > 0 %}
-                <span class="card-prof-estrela" aria-hidden="true">⭐</span>
-                <strong>{{ p.nota_media | nota_br }}</strong>
-                <span class="card-prof-nota-total">· {{ texto_avaliacoes(p.total_avaliacoes) }}</span>
-            {% else %}
-                <span class="card-prof-sem-nota">Ainda sem avaliações</span>
-            {% endif %}
-        </p>
-
-        {# Status de disponibilidade: só aparece quando existir esse dado de
-           verdade no cadastro (hoje ainda não existe -- ver models.py). #}
-        {% if p.disponibilidade %}
-            <p class="card-prof-status status-{{ p.disponibilidade }}">
-                {% if p.disponibilidade == "agora" %}🟢 Disponível agora
-                {% elif p.disponibilidade == "hoje" %}🟡 Disponível hoje
-                {% else %}⚪ Indisponível{% endif %}
-            </p>
-        {% endif %}
-    </div>
-
-    <div class="card-prof-acoes">
-        <a href="/profissional/{{ p.id }}" class="btn btn-secundario btn-sm">Ver perfil</a>
-        {% if usuario %}
-            {% if p.tem_whatsapp %}
-            <a href="https://wa.me/{{ p.whatsapp_numero }}" target="_blank" rel="noopener"
-               class="btn btn-whats btn-sm">{{ whatsapp_icon(16) }} WhatsApp</a>
-            {% endif %}
-        {% else %}
-        <a href="/comecar?tipo=cliente" class="btn btn-whats btn-sm">{{ whatsapp_icon(16) }} Entrar</a>
-        {% endif %}
-    </div>
-</article>
-{% endmacro %}
 
 {% macro url_ordenar(valor) -%}
 /?ordenar={{ valor }}{% if filtro_busca %}&busca={{ filtro_busca | urlencode }}{% endif %}{% if filtro_categoria %}&categoria={{ filtro_categoria }}{% endif %}{% if filtro_grupo %}&grupo={{ filtro_grupo | urlencode }}{% endif %}{% if filtro_estado %}&estado={{ filtro_estado | urlencode }}{% endif %}{% if filtro_cidade %}&cidade={{ filtro_cidade | urlencode }}{% endif %}
@@ -78,13 +13,13 @@
 
     <form method="get" action="/" class="busca-combo" id="formBuscaIndex">
         <div class="busca-combo-campo busca-combo-campo-servico">
-            <span class="busca-combo-icone" aria-hidden="true">🔎</span>
+            <span class="busca-combo-icone" aria-hidden="true"><i data-lucide="search" class="icone-lucide" aria-hidden="true"></i></span>
             <label for="inputBuscaIndex" class="visually-hidden">O que você precisa?</label>
             <input type="text" id="inputBuscaIndex" name="busca" value="{{ filtro_busca }}"
                    placeholder="O que você precisa? Ex: eletricista, encanador...">
         </div>
         <div class="busca-combo-campo busca-combo-campo-estado">
-            <span class="busca-combo-icone" aria-hidden="true">📍</span>
+            <span class="busca-combo-icone" aria-hidden="true"><i data-lucide="map-pin" class="icone-lucide" aria-hidden="true"></i></span>
             <label for="selectEstadoBusca" class="visually-hidden">Estado</label>
             <select id="selectEstadoBusca" name="estado" class="busca-combo-select">
                 <option value="">Estado</option>
@@ -105,7 +40,7 @@
     {# Linha discreta de localização, logo abaixo da busca -- ajuda sem
        competir com o campo principal. #}
     <div class="busca-local-linha">
-        <button type="button" id="btnCheckin" class="link-acao">📍 Usar minha localização</button>
+        <button type="button" id="btnCheckin" class="link-acao"><i data-lucide="map-pin" class="icone-lucide" aria-hidden="true"></i> Usar minha localização</button>
         {% if cidades_destaque %}
         <details class="cidades-outras">
             <summary>Trocar cidade</summary>
@@ -232,32 +167,32 @@
 <nav class="cats-rapidas" aria-label="Categorias populares">
     {% for c in categorias_populares %}
     <a href="/?categoria={{ c.id }}" class="cat-chip {% if filtro_categoria == c.id %}active{% endif %}">
-        <span class="cat-chip-icone" aria-hidden="true">{{ c.emoji }}</span>
+        <span class="cat-chip-icone" aria-hidden="true">{{ c.icone }}</span>
         <span class="cat-chip-rotulo">{{ c.rotulo }}</span>
     </a>
     {% endfor %}
     <a href="#todasCategorias" class="cat-chip cat-chip-todas" id="btnVerTodasCats"
        aria-controls="todasCategorias" aria-expanded="true">
-        <span class="cat-chip-icone" aria-hidden="true">＋</span>
+        <span class="cat-chip-icone" aria-hidden="true"><i data-lucide="plus" class="icone-lucide" aria-hidden="true"></i></span>
         <span class="cat-chip-rotulo">Ver todas</span>
     </a>
 </nav>
 
 <div class="cats-todas" id="todasCategorias">
     <a href="/?explorar=1" class="cats-todas-atalho {% if not filtro_categoria and not filtro_grupo %}active{% endif %}">
-        🔎 Ver todos os profissionais
+        <i data-lucide="search" class="icone-lucide" aria-hidden="true"></i> Ver todos os profissionais
     </a>
     {% for grupo_nome, cats in categorias_por_grupo %}
     <section class="cats-todas-grupo">
         <h2 class="cats-todas-titulo">
             <a href="/?grupo={{ grupo_nome | urlencode }}" class="{% if filtro_grupo == grupo_nome %}active{% endif %}">
-                <span aria-hidden="true">{{ grupo_emoji(grupo_nome) }}</span> {{ grupo_nome }}
+                <span aria-hidden="true">{{ grupo_icone(grupo_nome) }}</span> {{ grupo_nome }}
             </a>
         </h2>
         <div class="cats-todas-links">
             {% for c in cats %}
                 <a href="/?categoria={{ c.id }}" class="cats-todas-link {% if filtro_categoria == c.id %}active{% endif %}">
-                    {{ categoria_emoji(c.nome) }} {{ c.nome }}
+                    {{ categoria_icone(c.nome) }} {{ c.nome }}
                 </a>
             {% endfor %}
         </div>
@@ -318,7 +253,7 @@
     <section class="secao-cidade {% if cidade_usuario and cidade_nome == cidade_usuario %}secao-cidade-destaque{% endif %}">
         <h3 class="titulo-secao">
             {% if cidade_usuario and cidade_nome == cidade_usuario %}
-                📍 {{ cidade_nome }} <span class="selo selo-cidade">sua cidade</span>
+                <i data-lucide="map-pin" class="icone-lucide" aria-hidden="true"></i> {{ cidade_nome }} <span class="selo selo-cidade">sua cidade</span>
             {% else %}
                 {{ cidade_nome }}
             {% endif %}

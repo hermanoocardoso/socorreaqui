@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% from "_componentes.html" import card_profissional with context %}
 {% block titulo %}SocorreAqui — precisou, encontrou. 🏃🔧⚡️{% endblock %}
 
 {% block conteudo %}
@@ -24,12 +25,12 @@
             <div class="busca-combo-wrap mb-2">
                 <form action="/" method="get" class="busca-combo busca-combo-clara" autocomplete="off">
                     <div class="busca-combo-campo">
-                        <span class="busca-combo-icone" aria-hidden="true">🔎</span>
+                        <span class="busca-combo-icone" aria-hidden="true"><i data-lucide="search" class="icone-lucide" aria-hidden="true"></i></span>
                         <label for="hero-busca" class="visually-hidden">O que você precisa?</label>
                         <input type="text" id="hero-busca" name="busca" placeholder="O que você precisa?">
                     </div>
                     <div class="busca-combo-campo busca-combo-campo-estado">
-                        <span class="busca-combo-icone" aria-hidden="true">📍</span>
+                        <span class="busca-combo-icone" aria-hidden="true"><i data-lucide="map-pin" class="icone-lucide" aria-hidden="true"></i></span>
                         <label for="hero-estado" class="visually-hidden">Estado</label>
                         <select id="hero-estado" name="estado" class="busca-combo-select">
                             <option value="">Estado</option>
@@ -53,7 +54,7 @@
             </div>
 
             <div class="busca-local-linha">
-                <button type="button" id="btnLocalizacaoHero" class="link-acao">📍 Usar minha localização</button>
+                <button type="button" id="btnLocalizacaoHero" class="link-acao"><i data-lucide="map-pin" class="icone-lucide" aria-hidden="true"></i> Usar minha localização</button>
                 {% if cidades_destaque %}
                 <details class="cidades-outras">
                     <summary>Trocar cidade</summary>
@@ -73,12 +74,12 @@
             <nav class="cats-rapidas cats-rapidas-hero" aria-label="Categorias populares">
                 {% for c in categorias_populares %}
                 <a href="/?categoria={{ c.id }}" class="cat-chip">
-                    <span class="cat-chip-icone" aria-hidden="true">{{ c.emoji }}</span>
+                    <span class="cat-chip-icone" aria-hidden="true">{{ c.icone }}</span>
                     <span class="cat-chip-rotulo">{{ c.rotulo }}</span>
                 </a>
                 {% endfor %}
                 <a href="/?explorar=1" class="cat-chip cat-chip-todas">
-                    <span class="cat-chip-icone" aria-hidden="true">＋</span>
+                    <span class="cat-chip-icone" aria-hidden="true"><i data-lucide="plus" class="icone-lucide" aria-hidden="true"></i></span>
                     <span class="cat-chip-rotulo">Ver todas</span>
                 </a>
             </nav>
@@ -101,7 +102,7 @@
                         no SocorreAqui
                     </div>
                     {% if profissional_hero.total_avaliacoes > 0 %}
-                        <div class="small mt-1">⭐ <strong>{{ profissional_hero.nota_media | nota_br }}</strong> <span class="text-muted">· {{ texto_avaliacoes(profissional_hero.total_avaliacoes) }}</span></div>
+                        <div class="small mt-1"><i data-lucide="star" class="icone-lucide icone-estrela" aria-hidden="true"></i> <strong>{{ profissional_hero.nota_media | nota_br }}</strong> <span class="text-muted">· {{ texto_avaliacoes(profissional_hero.total_avaliacoes) }}</span></div>
                     {% else %}
                         <div class="small text-muted mt-1">Ainda sem avaliações</div>
                     {% endif %}
@@ -302,7 +303,7 @@
     {% for c in categorias_destaque[:5] %}
     <div class="col">
         <a href="/?categoria={{ c.id }}" class="categoria-destaque-card">
-            <span class="category-icon">{{ categoria_emoji(c.nome) }}</span>
+            <span class="category-icon">{{ categoria_icone(c.nome) }}</span>
             <span class="category-label">{{ c.nome }}</span>
             {% if categoria_descricao(c.nome) %}
                 <span class="categoria-destaque-desc">{{ categoria_descricao(c.nome) }}</span>
@@ -317,7 +318,7 @@
         {% for c in categorias_destaque[5:] %}
         <div class="col">
             <a href="/?categoria={{ c.id }}" class="categoria-destaque-card">
-                <span class="category-icon">{{ categoria_emoji(c.nome) }}</span>
+                <span class="category-icon">{{ categoria_icone(c.nome) }}</span>
                 <span class="category-label">{{ c.nome }}</span>
                 {% if categoria_descricao(c.nome) %}
                     <span class="categoria-destaque-desc">{{ categoria_descricao(c.nome) }}</span>
@@ -327,7 +328,7 @@
         {% endfor %}
         <div class="col">
             <a href="/?explorar=1" class="categoria-destaque-card">
-                <span class="category-icon">➕</span>
+                <span class="category-icon"><i data-lucide="plus" class="icone-lucide" aria-hidden="true"></i></span>
                 <span class="category-label">Todas</span>
             </a>
         </div>
@@ -337,35 +338,9 @@
 {% if profissionais_destaque %}
 <h2 class="h5 fw-semibold text-center mb-1 reveal">Profissionais perto de você</h2>
 <p class="text-muted text-center mb-4 reveal">Já estão no catálogo, prontos pra ajudar.</p>
-<div class="destaques-grade mb-5 reveal">
+<div class="resultados-grade mb-5 reveal">
     {% for p in profissionais_destaque %}
-        <div class="card-prof-destaque">
-            {% if p.foto_url %}
-                <img src="{{ p.foto_url }}" class="card-prof-destaque-foto{% if p.foto_e_logo %} img-logo{% endif %}" alt="{{ p.usuario.nome }}" loading="lazy" decoding="async">
-            {% else %}
-                <div class="card-prof-destaque-foto-vazia">{{ p.usuario.nome.strip()[0] | upper }}</div>
-            {% endif %}
-            <div class="card-prof-destaque-body">
-                <h6 class="mb-1">
-                    {{ p.usuario.nome }}
-                    {% if p.criado_via_indicacao %}<span class="badge bg-warning text-dark">Indicado</span>{% endif %}
-                </h6>
-                {% if p.eh_medico and p.especialidade_medica %}
-                    <span class="badge bg-info text-dark mb-1">🩺 {{ p.especialidade_medica }}</span>
-                {% else %}
-                    {% for cat in p.categorias[:1] %}
-                        <span class="badge bg-secondary mb-1">{{ categoria_emoji(cat.nome) }} {{ cat.nome }}</span>
-                    {% endfor %}
-                {% endif %}
-                <p class="text-muted small mb-1">📍 {{ p.cidade or '' }}</p>
-                {% if p.total_avaliacoes > 0 %}
-                    <p class="small mb-2">⭐ <strong>{{ p.nota_media | nota_br }}</strong> <span class="text-muted">· {{ texto_avaliacoes(p.total_avaliacoes) }}</span></p>
-                {% else %}
-                    <p class="small text-muted mb-2">Ainda sem avaliações</p>
-                {% endif %}
-                <a href="/comecar?tipo=cliente&next={{ ('/profissional/' ~ p.id) | urlencode }}" class="btn btn-secundario btn-sm w-100 mt-auto">Ver perfil</a>
-            </div>
-        </div>
+        {{ card_profissional(p, exigir_login=True) }}
     {% endfor %}
 </div>
 {% endif %}
@@ -399,7 +374,7 @@
 <div class="row g-4 mb-5 reveal">
     <div class="col-md-6">
         <div class="split-publico split-cliente">
-            <div class="split-publico-icone">🙋</div>
+            <div class="split-publico-icone"><i data-lucide="hand-helping" class="icone-lucide" aria-hidden="true"></i></div>
             <h3 class="h5 fw-bold mb-2">Precisa de ajuda?</h3>
             <p class="text-muted mb-4">Encontre profissionais perto de você.</p>
             <a href="/?explorar=1" class="btn btn-primary fw-semibold">Encontrar profissional</a>
@@ -407,7 +382,7 @@
     </div>
     <div class="col-md-6">
         <div class="split-publico split-profissional">
-            <div class="split-publico-icone">🛠️</div>
+            <div class="split-publico-icone"><i data-lucide="wrench" class="icone-lucide" aria-hidden="true"></i></div>
             <h3 class="h5 fw-bold mb-2">É profissional?</h3>
             <p class="mb-4">Mostre seu trabalho para novos clientes.</p>
             <a href="/comecar?tipo=profissional" class="btn btn-light fw-semibold">Cadastrar meu serviço</a>
@@ -424,18 +399,18 @@
                 procuram profissionais na sua região.
             </p>
             <ul class="list-unstyled pro-cta-checklist mb-4">
-                <li>✓ Cadastro gratuito</li>
-                <li>✓ Clientes da sua região</li>
-                <li>✓ Mais visibilidade</li>
-                <li>✓ Contato direto</li>
-                <li>✓ Seu perfil profissional</li>
+                <li><i data-lucide="check" class="icone-lucide" aria-hidden="true"></i> Cadastro gratuito</li>
+                <li><i data-lucide="check" class="icone-lucide" aria-hidden="true"></i> Clientes da sua região</li>
+                <li><i data-lucide="check" class="icone-lucide" aria-hidden="true"></i> Mais visibilidade</li>
+                <li><i data-lucide="check" class="icone-lucide" aria-hidden="true"></i> Contato direto</li>
+                <li><i data-lucide="check" class="icone-lucide" aria-hidden="true"></i> Seu perfil profissional</li>
             </ul>
             <a href="/comecar?tipo=profissional" class="btn btn-light btn-lg fw-semibold">
                 Quero cadastrar meu serviço
             </a>
         </div>
         <div class="col-lg-5 text-center d-none d-lg-block">
-            <div class="pro-cta-icon">🛠️</div>
+            <div class="pro-cta-icon"><i data-lucide="wrench" class="icone-lucide" aria-hidden="true"></i></div>
         </div>
     </div>
 </div>
@@ -444,50 +419,40 @@
 <div class="row row-cols-2 row-cols-md-3 g-4 mb-5 reveal">
     <div class="col">
         <div class="diferencial-card">
-            <div class="category-icon mx-auto mb-2">🛡️</div>
+            <div class="category-icon mx-auto mb-2"><i data-lucide="shield-check" class="icone-lucide" aria-hidden="true"></i></div>
             <div class="small fw-semibold">Perfis organizados</div>
         </div>
     </div>
     <div class="col">
         <div class="diferencial-card">
-            <div class="category-icon mx-auto mb-2">📍</div>
+            <div class="category-icon mx-auto mb-2"><i data-lucide="map-pin" class="icone-lucide" aria-hidden="true"></i></div>
             <div class="small fw-semibold">Profissionais da sua região</div>
         </div>
     </div>
     <div class="col">
         <div class="diferencial-card">
-            <div class="category-icon mx-auto mb-2">⭐</div>
+            <div class="category-icon mx-auto mb-2"><i data-lucide="star" class="icone-lucide icone-estrela" aria-hidden="true"></i></div>
             <div class="small fw-semibold">Avaliações de clientes</div>
         </div>
     </div>
     <div class="col">
         <div class="diferencial-card">
-            <div class="category-icon mx-auto mb-2">💬</div>
+            <div class="category-icon mx-auto mb-2"><i data-lucide="message-circle" class="icone-lucide" aria-hidden="true"></i></div>
             <div class="small fw-semibold">Contato direto</div>
         </div>
     </div>
     <div class="col">
         <div class="diferencial-card">
-            <div class="category-icon mx-auto mb-2">🔎</div>
+            <div class="category-icon mx-auto mb-2"><i data-lucide="search" class="icone-lucide" aria-hidden="true"></i></div>
             <div class="small fw-semibold">Busca rápida</div>
         </div>
     </div>
     <div class="col">
         <div class="diferencial-card">
-            <div class="category-icon mx-auto mb-2">💰</div>
+            <div class="category-icon mx-auto mb-2"><i data-lucide="circle-dollar-sign" class="icone-lucide" aria-hidden="true"></i></div>
             <div class="small fw-semibold">Sem taxa para encontrar profissionais</div>
         </div>
     </div>
 </div>
 
-<div class="landing-hero mb-4 reveal">
-    <div class="landing-hero-content">
-        <h2 class="h3 fw-bold mb-3">Precisa de ajuda?</h2>
-        <p class="lead mb-4">Encontre um profissional perto de você.</p>
-        <div class="d-flex flex-wrap justify-content-center gap-3">
-            <a href="/?explorar=1" class="btn btn-light btn-lg fw-semibold">Encontrar profissional</a>
-            <a href="/comecar?tipo=profissional" class="btn btn-outline-light btn-lg fw-semibold">Sou profissional</a>
-        </div>
-    </div>
-</div>
 {% endblock %}

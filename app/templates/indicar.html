@@ -37,7 +37,7 @@
                     <select name="categoria_id" class="form-select" required>
                         <option value="" disabled {% if not valores or not valores.categoria_id %}selected{% endif %}>Selecione a categoria</option>
                         {% for grupo_nome, cats in categorias_por_grupo %}
-                        <optgroup label="{{ grupo_emoji(grupo_nome) }} {{ grupo_nome }}">
+                        <optgroup label="{{ grupo_nome }}">
                             {% for c in cats %}
                             <option value="{{ c.id }}" {% if valores and valores.categoria_id == c.id|string %}selected{% endif %}>{{ c.nome }}</option>
                             {% endfor %}

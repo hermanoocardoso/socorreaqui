@@ -1,0 +1,84 @@
+{#
+   Componentes reutilizáveis de listagem. Um único card de profissional é
+   usado na busca/home (index.html) e na landing (landing.html), para que a
+   estrutura visual seja a mesma em todo o site.
+
+   Parâmetros:
+   - p: o profissional (ProfessionalProfile).
+   - exigir_login: quando True, "Ver perfil" manda antes pelo cadastro/login
+     (usado na landing, que hoje exige conta antes de abrir o perfil). A regra
+     de acesso não muda: só a rota de destino é escolhida pelo chamador.
+#}
+
+{% macro card_profissional(p, exigir_login=False) %}
+{% set url_perfil = ('/comecar?tipo=cliente&next=' ~ ('/profissional/' ~ p.id) | urlencode) if exigir_login else ('/profissional/' ~ p.id) %}
+<article class="card-prof">
+    <a href="{{ url_perfil }}" class="card-prof-foto" tabindex="-1" aria-hidden="true">
+        {% if p.foto_url %}
+            <img src="{{ p.foto_url }}" alt="" loading="lazy" decoding="async"
+                 class="{% if p.foto_e_logo %}img-logo{% endif %}">
+        {% else %}
+            {# Avatar padrão: inicial do nome, no lugar de um bloco vazio grande. #}
+            <span class="card-prof-avatar">{{ p.usuario.nome.strip()[0] | upper }}</span>
+        {% endif %}
+    </a>
+
+    <div class="card-prof-info">
+        <h3 class="card-prof-nome">
+            <a href="{{ url_perfil }}">{{ p.usuario.nome }}</a>
+            {% if p.criado_via_indicacao %}<span class="selo selo-indicado" title="Perfil indicado por outro usuário. Não é uma verificação de identidade da plataforma.">Indicado</span>{% endif %}
+        </h3>
+
+        {% if (p.eh_medico and p.especialidade_medica) or p.categorias %}
+        <p class="card-prof-categoria">
+            {% if p.eh_medico and p.especialidade_medica %}
+                <i data-lucide="stethoscope" class="icone-lucide" aria-hidden="true"></i>
+                {{ p.especialidade_medica }}
+            {% else %}
+                {{ categoria_icone(p.categorias[0].nome) }}
+                {{ p.categorias[0].nome }}
+                {% if p.categorias|length > 1 %}<span class="card-prof-mais">+{{ p.categorias|length - 1 }}</span>{% endif %}
+            {% endif %}
+        </p>
+        {% endif %}
+
+        <p class="card-prof-local">
+            <i data-lucide="map-pin" class="icone-lucide" aria-hidden="true"></i>
+            {% if p.bairro and p.bairro.strip().lower() != (p.cidade or '').strip().lower() %}{{ p.bairro }}, {% endif %}{{ p.cidade or '' }}
+        </p>
+
+        <p class="card-prof-nota">
+            {% if p.total_avaliacoes > 0 %}
+                <i data-lucide="star" class="icone-lucide icone-estrela" aria-hidden="true"></i>
+                <strong>{{ p.nota_media | nota_br }}</strong>
+                <span class="card-prof-nota-total">· {{ texto_avaliacoes(p.total_avaliacoes) }}</span>
+            {% else %}
+                <span class="card-prof-sem-nota">Ainda sem avaliações</span>
+            {% endif %}
+        </p>
+
+        {# Disponibilidade: só aparece quando existir esse dado de verdade no
+           cadastro. A cor é reforçada pelo texto, nunca só pela bolinha. #}
+        {% if p.disponibilidade %}
+            <p class="card-prof-status status-{{ p.disponibilidade }}">
+                <span class="status-bolinha" aria-hidden="true"></span>
+                {% if p.disponibilidade == "agora" %}Disponível agora
+                {% elif p.disponibilidade == "hoje" %}Disponível hoje
+                {% else %}Indisponível{% endif %}
+            </p>
+        {% endif %}
+    </div>
+
+    <div class="card-prof-acoes">
+        <a href="{{ url_perfil }}" class="btn btn-secundario btn-sm">Ver perfil</a>
+        {% if usuario %}
+            {% if p.tem_whatsapp %}
+            <a href="https://wa.me/{{ p.whatsapp_numero }}" target="_blank" rel="noopener"
+               class="btn btn-whats btn-sm">{{ whatsapp_icon(16) }} WhatsApp</a>
+            {% endif %}
+        {% else %}
+        <a href="/comecar?tipo=cliente" class="btn btn-whats btn-sm">{{ whatsapp_icon(16) }} Entrar</a>
+        {% endif %}
+    </div>
+</article>
+{% endmacro %}

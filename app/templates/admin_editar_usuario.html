@@ -6,7 +6,7 @@
     <a href="/admin" class="link-acao">&larr; Voltar ao painel</a>
     {% if alvo.tipo == "profissional" and alvo.perfil_profissional %}
         <a href="/admin/profissional/{{ alvo.perfil_profissional.id }}/editar" class="btn btn-secundario btn-sm">
-            🛠️ Editar perfil profissional
+            <i data-lucide="wrench" class="icone-lucide" aria-hidden="true"></i> Editar perfil profissional
         </a>
     {% endif %}
 </div>

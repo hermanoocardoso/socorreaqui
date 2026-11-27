@@ -30,7 +30,7 @@
 <div class="perfil-barra-topo">
     <a href="/" class="link-acao">&larr; Voltar ao catálogo</a>
     {% if eh_admin_usuario %}
-        <a href="/admin/profissional/{{ perfil.id }}/editar" class="btn btn-secundario btn-sm">✏️ Editar como admin</a>
+        <a href="/admin/profissional/{{ perfil.id }}/editar" class="btn btn-secundario btn-sm"><i data-lucide="pencil" class="icone-lucide" aria-hidden="true"></i> Editar como admin</a>
     {% endif %}
 </div>
 
@@ -49,24 +49,24 @@
         <div class="perfil-topo-dados">
             <h1 class="perfil-nome">
                 {{ perfil.usuario.nome }}
-                {% if perfil.criado_via_indicacao %}<span class="selo selo-indicado">Indicado</span>{% endif %}
+                {% if perfil.criado_via_indicacao %}<span class="selo selo-indicado" title="Perfil indicado por outro usuário. Não é uma verificação de identidade da plataforma.">Indicado</span>{% endif %}
             </h1>
 
             {% if (perfil.eh_medico and perfil.especialidade_medica) or categoria_principal %}
             <p class="perfil-categoria">
                 {% if perfil.eh_medico and perfil.especialidade_medica %}
-                    🩺 {{ perfil.especialidade_medica }}
+                    <i data-lucide="stethoscope" class="icone-lucide" aria-hidden="true"></i> {{ perfil.especialidade_medica }}
                 {% else %}
-                    {{ categoria_emoji(categoria_principal) }} {{ categoria_principal }}
+                    {{ categoria_icone(categoria_principal) }} {{ categoria_principal }}
                 {% endif %}
             </p>
             {% endif %}
 
-            <p class="perfil-local">📍 {% if perfil.bairro and perfil.bairro.strip().lower() != (perfil.cidade or '').strip().lower() %}{{ perfil.bairro }}, {% endif %}{{ perfil.cidade or '' }}</p>
+            <p class="perfil-local"><i data-lucide="map-pin" class="icone-lucide" aria-hidden="true"></i> {% if perfil.bairro and perfil.bairro.strip().lower() != (perfil.cidade or '').strip().lower() %}{{ perfil.bairro }}, {% endif %}{{ perfil.cidade or '' }}</p>
 
             <p class="perfil-nota">
                 {% if perfil.total_avaliacoes > 0 %}
-                    <span aria-hidden="true">⭐</span>
+                    <i data-lucide="star" class="icone-lucide icone-estrela" aria-hidden="true"></i>
                     <strong>{{ perfil.nota_media | nota_br }}</strong>
                     <span class="perfil-nota-total">· {{ texto_avaliacoes(perfil.total_avaliacoes) }}</span>
                 {% else %}
@@ -78,9 +78,9 @@
                o cadastro ainda não tem disponibilidade (ver models.py). #}
             {% if perfil.disponibilidade %}
                 <p class="card-prof-status status-{{ perfil.disponibilidade }}">
-                    {% if perfil.disponibilidade == "agora" %}🟢 Disponível agora
-                    {% elif perfil.disponibilidade == "hoje" %}🟡 Disponível hoje
-                    {% else %}⚪ Indisponível{% endif %}
+                    {% if perfil.disponibilidade == "agora" %}<span class="status-bolinha" aria-hidden="true"></span>Disponível agora
+                    {% elif perfil.disponibilidade == "hoje" %}<span class="status-bolinha" aria-hidden="true"></span>Disponível hoje
+                    {% else %}<span class="status-bolinha" aria-hidden="true"></span>Indisponível{% endif %}
                 </p>
             {% endif %}
         </div>
@@ -96,7 +96,7 @@
             </a>
             {% endif %}
             {% if perfil.usuario.telefone %}
-            <a class="btn btn-secundario w-100" href="tel:{{ perfil.usuario.telefone }}">📞 {{ perfil.usuario.telefone }}</a>
+            <a class="btn btn-secundario w-100" href="tel:{{ perfil.usuario.telefone }}"><i data-lucide="phone" class="icone-lucide" aria-hidden="true"></i> {{ perfil.usuario.telefone }}</a>
             {% endif %}
         {% else %}
             <a class="btn btn-whats btn-lg w-100 perfil-acao-whats" href="/comecar?tipo=cliente">
@@ -110,20 +110,20 @@
 {% if perfil.eh_medico %}
 <section class="perfil-secao info-medica">
     {% if perfil.especialidade_medica %}
-        <p class="fs-5 mb-1"><strong>🩺 {{ perfil.especialidade_medica }}</strong></p>
+        <p class="fs-5 mb-1"><strong><i data-lucide="stethoscope" class="icone-lucide" aria-hidden="true"></i> {{ perfil.especialidade_medica }}</strong></p>
     {% endif %}
     {% if perfil.crm %}
         <p class="text-muted small mb-2">{{ perfil.crm }}</p>
     {% endif %}
     {% if perfil.atende_convenio == True %}
         <p class="mb-0">
-            <span class="badge bg-success">✅ Atende por convênio</span>
+            <span class="badge bg-success"><i data-lucide="circle-check" class="icone-lucide" aria-hidden="true"></i> Atende por convênio</span>
             {% if perfil.convenios_aceitos %}
                 <span class="text-muted small ms-1">{{ perfil.convenios_aceitos }}</span>
             {% endif %}
         </p>
     {% elif perfil.atende_convenio == False %}
-        <p class="mb-0"><span class="badge bg-secondary">💳 Atendimento particular (sem convênio)</span></p>
+        <p class="mb-0"><span class="badge bg-secondary"><i data-lucide="credit-card" class="icone-lucide" aria-hidden="true"></i> Atendimento particular (sem convênio)</span></p>
     {% endif %}
 </section>
 {% endif %}
@@ -139,10 +139,10 @@
     <h2 class="perfil-secao-titulo">Serviços</h2>
     <p class="perfil-tags mb-0">
         {% for cat in perfil.categorias %}
-            <span class="badge bg-secondary">{{ categoria_emoji(cat.nome) }} {{ cat.nome }}</span>
+            <span class="badge bg-secondary">{{ categoria_icone(cat.nome) }} {{ cat.nome }}</span>
         {% endfor %}
         {% if perfil.atende_domicilio %}
-            <span class="badge bg-info text-dark">🏠 Atende em domicílio</span>
+            <span class="badge bg-info text-dark"><i data-lucide="house" class="icone-lucide" aria-hidden="true"></i> Atende em domicílio</span>
         {% endif %}
     </p>
     {% if perfil.valor_mao_de_obra %}
@@ -154,7 +154,7 @@
 <section class="perfil-secao">
     <h2 class="perfil-secao-titulo">Área de atendimento</h2>
     <p class="mb-0">
-        📍
+        <i data-lucide="map-pin" class="icone-lucide" aria-hidden="true"></i>
         {%- if perfil.bairro and perfil.bairro.strip().lower() != (perfil.cidade or '').strip().lower() %} {{ perfil.bairro }},{% endif %}
         {{ perfil.cidade or '' }}
     </p>
@@ -184,7 +184,7 @@
 
     {% if usuario and pode_avaliar %}
     <div class="recomendacao-card">
-        <h3 class="h6 fw-semibold mb-1">⭐ Deixe aqui sua recomendação</h3>
+        <h3 class="h6 fw-semibold mb-1"><i data-lucide="star" class="icone-lucide icone-estrela" aria-hidden="true"></i> Deixe aqui sua recomendação</h3>
         <p class="text-muted small mb-3">
             Já contratou? Avalie e recomende — sua opinião ajuda outras pessoas a decidir.
         </p>
@@ -223,7 +223,7 @@
     </div>
     {% elif not usuario %}
     <div class="recomendacao-card text-center">
-        <h3 class="h6 fw-semibold mb-2">⭐ Deixe aqui sua recomendação</h3>
+        <h3 class="h6 fw-semibold mb-2"><i data-lucide="star" class="icone-lucide icone-estrela" aria-hidden="true"></i> Deixe aqui sua recomendação</h3>
         <p class="mb-3 small">Entre ou crie uma conta grátis pra avaliar e recomendar este profissional.</p>
         <div class="d-flex flex-wrap justify-content-center gap-2">
             <a href="/login" class="btn btn-primary fw-semibold">Entrar</a>
@@ -245,7 +245,7 @@
         </a>
         {% endif %}
         {% if perfil.usuario.telefone %}
-        <a class="btn btn-secundario" href="tel:{{ perfil.usuario.telefone }}">📞 {{ perfil.usuario.telefone }}</a>
+        <a class="btn btn-secundario" href="tel:{{ perfil.usuario.telefone }}"><i data-lucide="phone" class="icone-lucide" aria-hidden="true"></i> {{ perfil.usuario.telefone }}</a>
         {% endif %}
     </div>
 </section>
