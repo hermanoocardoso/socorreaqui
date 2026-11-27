@@ -14,6 +14,14 @@
     --sombra: 0 2px 10px rgba(31, 35, 51, 0.06);
     --sombra-hover: 0 12px 24px rgba(31, 35, 51, 0.10);
     --transicao: 200ms ease;
+    /* Escala de espaçamento oficial (4, 8, 12, 16, 24, 32, 48 px). */
+    --espaco-1: 4px;
+    --espaco-2: 8px;
+    --espaco-3: 12px;
+    --espaco-4: 16px;
+    --espaco-6: 24px;
+    --espaco-8: 32px;
+    --espaco-12: 48px;
 }
 
 /* Desliga toda microinteração/animação pra quem pediu isso no sistema —
@@ -1452,12 +1460,14 @@ details summary.ver-todas-categorias::-webkit-details-marker {
     font-weight: 500;
 }
 .btn-whats {
+    /* #13873E: texto branco com contraste de 4,6:1 (WCAG AA). O verde
+       #16A34A da paleta dá só 3,3:1 com texto branco. */
     --bs-btn-color: #fff;
-    --bs-btn-bg: var(--cor-sucesso);
-    --bs-btn-border-color: var(--cor-sucesso);
+    --bs-btn-bg: #13873E;
+    --bs-btn-border-color: #13873E;
     --bs-btn-hover-color: #fff;
-    --bs-btn-hover-bg: #13873E;
-    --bs-btn-hover-border-color: #13873E;
+    --bs-btn-hover-bg: #0F6F33;
+    --bs-btn-hover-border-color: #0F6F33;
     --bs-btn-active-color: #fff;
     --bs-btn-active-bg: #0F6F33;
     --bs-btn-active-border-color: #0F6F33;
@@ -1998,4 +2008,18 @@ img.foto-atual-thumb.img-logo {
         padding-top: 0.5rem;
         padding-bottom: 0.5rem;
     }
+}
+
+/* ---------- Resultados: cabeçalho compacto e contexto da busca ---------- */
+.hero-busca-compacto {
+    padding-top: var(--espaco-4);
+    padding-bottom: var(--espaco-4);
+}
+.hero-busca-compacto .hero-busca-titulo {
+    font-size: 1.25rem;
+    margin-bottom: var(--espaco-3);
+}
+.resultados-contexto {
+    color: var(--cor-texto-suave);
+    margin-top: var(--espaco-1);
 }

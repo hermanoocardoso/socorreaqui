@@ -19,6 +19,14 @@
 <div class="alert alert-danger">{{ erro }}</div>
 {% endif %}
 
+{% if pendencias and not admin_editando %}
+<div class="alert alert-warning" role="status">
+    <p class="fw-semibold mb-1">Seu perfil ainda não aparece no catálogo público.</p>
+    <p class="small mb-1">Para publicar, complete: {{ pendencias | join(", ") }}.</p>
+    <p class="small text-muted mb-0">Enquanto isso, seus dados ficam salvos normalmente.</p>
+</div>
+{% endif %}
+
 <form method="post" action="{{ form_action or '/profissional/perfil/editar' }}" enctype="multipart/form-data">
     <div class="mb-3">
         <label class="form-label">Foto</label>

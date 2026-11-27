@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% block titulo %}{{ titulo_pagina or "SocorreAqui — precisou, encontrou. 🏃🔧⚡️" }}{% endblock %}
-{% from "_componentes.html" import card_profissional with context %}
+{% from "_componentes.html" import card_profissional, linha_localizacao with context %}
 {% block meta_descricao %}{{ meta_descricao_pagina or "Encontre eletricistas, diaristas, manicures, mecânicos e outros profissionais da sua região. Cadastro gratuito, contato direto pelo WhatsApp." }}{% endblock %}
 
 {% macro url_ordenar(valor) -%}
@@ -8,7 +8,7 @@
 {%- endmacro %}
 
 {% block conteudo %}
-<section class="hero-busca">
+<section class="hero-busca{% if filtro_busca or filtro_categoria or filtro_grupo or filtro_estado or filtro_cidade %} hero-busca-compacto{% endif %}">
     <h1 class="hero-busca-titulo">{{ h1_pagina or "Encontre um profissional de confiança" }}</h1>
 
     <form method="get" action="/" class="busca-combo" id="formBuscaIndex">
@@ -39,20 +39,7 @@
 
     {# Linha discreta de localização, logo abaixo da busca -- ajuda sem
        competir com o campo principal. #}
-    <div class="busca-local-linha">
-        <button type="button" id="btnCheckin" class="link-acao"><i data-lucide="map-pin" class="icone-lucide" aria-hidden="true"></i> Usar minha localização</button>
-        {% if cidades_destaque %}
-        <details class="cidades-outras">
-            <summary>Trocar cidade</summary>
-            <div class="cidades-outras-lista">
-                {% for c in cidades_destaque %}
-                    <a href="/?cidade={{ c | urlencode }}" class="btn-chip {% if filtro_cidade == c %}active{% endif %}">{{ c }}</a>
-                {% endfor %}
-            </div>
-        </details>
-        {% endif %}
-    </div>
-    <p id="checkinStatus" class="busca-local-status" role="status"></p>
+    {{ linha_localizacao("btnCheckin", "checkinStatus", cidades_destaque, filtro_cidade) }}
 </section>
 
 <script src="/static/js/estado-cidade.js"></script>
@@ -242,7 +229,14 @@
         {% endif %}
         {%- if filtro_cidade %} em {{ filtro_cidade }}{% endif %}
     </h2>
+    {% if filtro_categoria or filtro_grupo %}
+    <p class="resultados-contexto small mb-0">
+        Categoria:
+        <strong>{% if filtro_categoria %}{% for c in categorias %}{% if c.id == filtro_categoria %}{{ c.nome }}{% endif %}{% endfor %}{% else %}{{ filtro_grupo }}{% endif %}</strong>
+    </p>
+    {% endif %}
     <div class="resultados-filtros" role="group" aria-label="Ordenar resultados">
+        <a href="{{ url_ordenar('relevancia') }}" class="btn-chip {% if ordenar == 'relevancia' %}active{% endif %}">Relevância</a>
         <a href="{{ url_ordenar('avaliacao') }}" class="btn-chip {% if ordenar == 'avaliacao' %}active{% endif %}">Melhor avaliados</a>
         <a href="{{ url_ordenar('recentes') }}" class="btn-chip {% if ordenar == 'recentes' %}active{% endif %}">Mais recentes</a>
     </div>
@@ -273,7 +267,8 @@
 </div>
 {% else %}
 <div class="resultados-vazio">
-    <p class="mb-2">Não encontramos profissionais com esses filtros ainda.</p>
+    <p class="mb-1 fw-semibold">Não encontramos profissionais com esses filtros ainda.</p>
+    <p class="text-muted small mb-3">Tente outra cidade, um termo mais geral ou veja todos os profissionais disponíveis.</p>
     <a href="/?explorar=1" class="btn-chip">Ver todos os profissionais</a>
     {% if filtro_cidade %}
         <a href="/?busca={{ filtro_busca }}&categoria={{ filtro_categoria or '' }}" class="btn-chip">Expandir área de busca</a>

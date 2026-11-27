@@ -31,6 +31,7 @@ from sqlalchemy import or_, func
 from app.database import Base, engine, get_db
 from app import models, auth, storage, email_utils
 from app.localidades import UFS_BRASIL
+from app.institucional import PAGINAS as PAGINAS_INSTITUCIONAIS, MINUTA_EM_REVISAO
 from app.oauth import oauth, google_oauth_habilitado
 from app.seed import rodar_seed
 
@@ -111,6 +112,35 @@ def _garantir_colunas_novas():
 
 
 _garantir_colunas_novas()
+
+
+def _corrigir_nomes_categorias():
+    """Corrige o nome 'Serviços domésticoa' para 'Serviços domésticos'.
+
+    Atualiza a linha existente (mesmo id), então profissionais e vínculos
+    continuam apontando para a mesma categoria. É idempotente: se a versão
+    correta já existir, não mexe, para não violar a unicidade do nome.
+    """
+    from sqlalchemy import text
+
+    with engine.begin() as conn:
+        antigo = conn.execute(
+            text("SELECT id FROM categories WHERE nome = :nome"), {"nome": "Serviços domésticoa"}
+        ).first()
+        if not antigo:
+            return
+        corrigido = conn.execute(
+            text("SELECT id FROM categories WHERE nome = :nome"), {"nome": "Serviços domésticos"}
+        ).first()
+        if corrigido:
+            return
+        conn.execute(
+            text("UPDATE categories SET nome = :novo WHERE id = :id"),
+            {"novo": "Serviços domésticos", "id": antigo[0]},
+        )
+
+
+_corrigir_nomes_categorias()
 rodar_seed()
 
 app = FastAPI(title="SocorreAqui")
@@ -487,7 +517,7 @@ CATEGORIA_ICONES = {
     "Gás encanado": "flame",
     "Blogueiro(a)": "pen-tool",
     "Cesta de Café da Manhã": "coffee",
-    "Serviços domésticoa": "house",  # nome como está cadastrado hoje (tem um erro de digitação -- ver painel admin)
+    "Serviços domésticos": "house",
     "Serviços Técnicos": "settings-2",
     "Técnico em TV": "tv",
 }
@@ -610,9 +640,9 @@ def api_ultimos_profissionais(db: Session = Depends(get_db)):
             models.ProfessionalProfile.usuario.has(models.User.tipo == "profissional"),
         )
         .order_by(models.ProfessionalProfile.criado_em.desc())
-        .limit(ULTIMOS_PROFISSIONAIS_LIMITE)
         .all()
     )
+    profissionais = [p for p in profissionais if p.publicavel][:ULTIMOS_PROFISSIONAIS_LIMITE]
     return [
         {
             "nome": p.usuario.nome,
@@ -629,21 +659,20 @@ def cidades_mais_ativas(db: Session, limite: int = 6) -> list[str]:
     de clique — pra quem não quer (ou não confia n)a localização automática
     do navegador (GPS de notebook/rede errando é comum, e o site não tem
     como controlar isso)."""
-    linhas = (
-        db.query(models.ProfessionalProfile.cidade)
-        .filter(
-            models.ProfessionalProfile.aprovado == True,  # noqa: E712
-            models.ProfessionalProfile.ativo == True,  # noqa: E712
-            models.ProfessionalProfile.usuario.has(models.User.tipo == "profissional"),
-            models.ProfessionalProfile.cidade.isnot(None),
-            models.ProfessionalProfile.cidade != "",
-        )
-        .group_by(models.ProfessionalProfile.cidade)
-        .order_by(func.count(models.ProfessionalProfile.id).desc())
-        .limit(limite)
-        .all()
-    )
-    return [linha[0] for linha in linhas]
+    # Conta em Python para aplicar a mesma regra de publicação (cadastro
+    # completo) usada no resto do site.
+    contagem = {}
+    candidatos = db.query(models.ProfessionalProfile).filter(
+        models.ProfessionalProfile.aprovado == True,  # noqa: E712
+        models.ProfessionalProfile.ativo == True,  # noqa: E712
+        models.ProfessionalProfile.usuario.has(models.User.tipo == "profissional"),
+    ).all()
+    for p in candidatos:
+        cidade = (p.cidade or "").strip()
+        if cidade and p.publicavel:
+            contagem[cidade] = contagem.get(cidade, 0) + 1
+    ordenadas = sorted(contagem.items(), key=lambda par: (-par[1], par[0]))
+    return [cidade for cidade, _ in ordenadas[:limite]]
 
 
 def _categorias_agrupadas(db: Session):
@@ -663,7 +692,7 @@ def _categorias_agrupadas(db: Session):
 
 def _resultados_catalogo(
     request, db, usuario, *,
-    categoria=None, grupo=None, estado=None, cidade=None, busca=None, ordenar="avaliacao",
+    categoria=None, grupo=None, estado=None, cidade=None, busca=None, ordenar="relevancia",
     titulo_pagina=None, meta_descricao_pagina=None, h1_pagina=None,
 ):
     """Monta a resposta da tela de resultados (index.html) -- extraído do
@@ -712,12 +741,39 @@ def _resultados_catalogo(
             )
         )
 
-    profissionais = query.all()
+    profissionais = [p for p in query.all() if p.publicavel]
     if ordenar == "recentes":
         profissionais.sort(key=lambda p: p.criado_em, reverse=True)
-    else:
-        ordenar = "avaliacao"
+    elif ordenar == "avaliacao":
         profissionais.sort(key=lambda p: (p.nota_media, p.total_avaliacoes), reverse=True)
+    else:
+        # Relevância: combina o que a pessoa pediu (busca, categoria e cidade)
+        # com os dados reais do perfil. Não usa disponibilidade, distância ou
+        # qualquer dado que o cadastro não tenha de verdade.
+        ordenar = "relevancia"
+        termo = (busca or "").strip().lower()
+        cidade_ref = (cidade or "").strip().lower()
+
+        def pontuacao(p):
+            pts = 0
+            nomes_categorias = [c.nome.lower() for c in p.categorias]
+            if termo:
+                if termo in (p.usuario.nome or "").lower():
+                    pts += 3
+                if any(termo in nome for nome in nomes_categorias):
+                    pts += 3
+                if termo in (p.descricao or "").lower():
+                    pts += 1
+            if categoria_id and any(c.id == categoria_id for c in p.categorias):
+                pts += 2
+            if cidade_ref and (p.cidade or "").strip().lower() == cidade_ref:
+                pts += 2
+            return pts
+
+        profissionais.sort(
+            key=lambda p: (pontuacao(p), p.nota_media, p.total_avaliacoes, p.criado_em),
+            reverse=True,
+        )
 
     # Sem nenhum filtro (busca "em branco"): mostra todo mundo, mas
     # agrupado por CIDADE (não bairro) -- o catálogo já tem gente de
@@ -786,7 +842,7 @@ def catalogo(
     cidade: str | None = None,
     busca: str | None = None,
     explorar: str | None = None,
-    ordenar: str = "avaliacao",
+    ordenar: str = "relevancia",
     db: Session = Depends(get_db),
     usuario=Depends(auth.usuario_logado),
 ):
@@ -822,6 +878,7 @@ def catalogo(
             )
             .all()
         )
+        candidatos = [p for p in candidatos if p.publicavel]
         candidatos.sort(key=lambda p: (p.nota_media, p.total_avaliacoes, p.criado_em), reverse=True)
         profissionais_destaque = candidatos[:4]
 
@@ -906,6 +963,40 @@ def pagina_seo_categoria_cidade(
 SITE_URL = "https://socorreaqui.tec.br"
 
 
+def _pagina_institucional(request, usuario, chave):
+    pagina = PAGINAS_INSTITUCIONAIS[chave]
+    return templates.TemplateResponse(
+        "institucional.html",
+        {
+            "request": request,
+            "usuario": usuario,
+            "pagina": pagina,
+            # Só as minutas (termos e privacidade) mostram o aviso de revisão.
+            "minuta_em_revisao": MINUTA_EM_REVISAO and pagina["minuta"],
+        },
+    )
+
+
+@app.get("/sobre")
+def pagina_sobre(request: Request, usuario=Depends(auth.usuario_logado)):
+    return _pagina_institucional(request, usuario, "sobre")
+
+
+@app.get("/contato")
+def pagina_contato(request: Request, usuario=Depends(auth.usuario_logado)):
+    return _pagina_institucional(request, usuario, "contato")
+
+
+@app.get("/termos")
+def pagina_termos(request: Request, usuario=Depends(auth.usuario_logado)):
+    return _pagina_institucional(request, usuario, "termos")
+
+
+@app.get("/privacidade")
+def pagina_privacidade(request: Request, usuario=Depends(auth.usuario_logado)):
+    return _pagina_institucional(request, usuario, "privacidade")
+
+
 @app.get("/googlefcb4228506c22a8f.html")
 def google_search_console_verificacao():
     # Arquivo de verificação de propriedade do Google Search Console --
@@ -944,6 +1035,7 @@ def sitemap_xml(db: Session = Depends(get_db)):
         )
         .all()
     )
+    aprovados = [p for p in aprovados if p.publicavel]
     for p in aprovados:
         urls.append((f"{SITE_URL}/profissional/{p.id}", "0.7"))
 
@@ -1535,6 +1627,9 @@ def ver_profissional(
     ).first()
     if not perfil:
         return RedirectResponse("/", status_code=303)
+    # Perfil incompleto não aparece publicamente; dono e admin continuam vendo.
+    if not perfil.publicavel and not eh_admin(usuario) and not (usuario and usuario.id == perfil.usuario_id):
+        return RedirectResponse("/", status_code=303)
     # Conta que não é mais do tipo "profissional" não tem perfil público --
     # o admin continua enxergando tudo pelo painel.
     if perfil.usuario.tipo != "profissional" and not eh_admin(usuario):
@@ -1750,6 +1845,7 @@ def form_editar_perfil(
             "categorias_selecionadas": categorias_selecionadas,
             "especialidades_medicas": ESPECIALIDADES_MEDICAS,
             "erro": None,
+            "pendencias": perfil.pendencias_publicacao if perfil else [],
         },
     )
 
@@ -1766,6 +1862,7 @@ def _erro_editar_perfil(request, db, usuario, perfil, mensagem):
             "categorias_por_grupo": _categorias_agrupadas(db),
             "categorias_selecionadas": categorias_selecionadas,
             "especialidades_medicas": ESPECIALIDADES_MEDICAS,
+            "pendencias": perfil.pendencias_publicacao if perfil else [],
             "erro": mensagem,
         },
     )

@@ -170,6 +170,40 @@ class ProfessionalProfile(Base):
     def eh_medico(self) -> bool:
         return any((c.nome or "").strip().lower() == "médico" for c in self.categorias)
 
+    @property
+    def whatsapp_valido(self) -> bool:
+        """WhatsApp com DDD + número (10 ou 11 dígitos), com ou sem o 55 do país."""
+        numero = re.sub(r"\D", "", self.whatsapp or self.usuario.telefone or "")
+        if numero.startswith("55") and len(numero) in (12, 13):
+            numero = numero[2:]
+        return len(numero) in (10, 11)
+
+    @property
+    def pendencias_publicacao(self) -> list[str]:
+        """Campos obrigatórios que ainda faltam para o perfil aparecer publicamente.
+
+        Cadastro incompleto continua salvo no banco; só deixa de aparecer no
+        catálogo, na landing, na API pública, no sitemap e no perfil público.
+        """
+        faltas = []
+        if not (self.usuario and (self.usuario.nome or "").strip()):
+            faltas.append("Nome")
+        if not self.categorias:
+            faltas.append("Categoria principal")
+        if not (self.estado or "").strip():
+            faltas.append("Estado")
+        if not (self.cidade or "").strip():
+            faltas.append("Cidade")
+        if not self.whatsapp_valido:
+            faltas.append("WhatsApp válido")
+        if not (self.descricao or "").strip():
+            faltas.append("Descrição dos serviços")
+        return faltas
+
+    @property
+    def publicavel(self) -> bool:
+        return not self.pendencias_publicacao
+
 
 class Review(Base):
     __tablename__ = "reviews"

@@ -77,8 +77,33 @@
                class="btn btn-whats btn-sm">{{ whatsapp_icon(16) }} WhatsApp</a>
             {% endif %}
         {% else %}
-        <a href="/comecar?tipo=cliente" class="btn btn-whats btn-sm">{{ whatsapp_icon(16) }} Entrar</a>
+        <a href="/comecar?tipo=cliente&next={{ ('/profissional/' ~ p.id) | urlencode }}" class="btn btn-whats btn-sm">{{ whatsapp_icon(16) }} Entrar</a>
         {% endif %}
     </div>
 </article>
+{% endmacro %}
+
+{#
+   Controle único de localização: "Usar minha localização" + atalhos de cidade.
+   Os campos de Estado e Cidade da busca continuam sendo a fonte da verdade; o
+   JS de cada página (ids passados em btn_id e status_id) só preenche esses
+   campos ou dispara a busca, como antes.
+#}
+{% macro linha_localizacao(btn_id, status_id, cidades, cidade_ativa=None) %}
+<div class="busca-local-linha">
+    <button type="button" id="{{ btn_id }}" class="link-acao">
+        <i data-lucide="map-pin" class="icone-lucide" aria-hidden="true"></i> Usar minha localização
+    </button>
+    {% if cidades %}
+    <details class="cidades-outras">
+        <summary>Trocar cidade</summary>
+        <div class="cidades-outras-lista">
+            {% for c in cidades %}
+                <a href="/?cidade={{ c | urlencode }}" class="btn-chip {% if cidade_ativa == c %}active{% endif %}">{{ c }}</a>
+            {% endfor %}
+        </div>
+    </details>
+    {% endif %}
+</div>
+<p id="{{ status_id }}" class="busca-local-status" role="status"></p>
 {% endmacro %}
